@@ -1,0 +1,5 @@
+rootProject.name = 'game-semester-work'
+include 'server'
+include 'client'
+include 'core'
+
