@@ -1,27 +1,50 @@
 package org.danilkha.game;
 
+import org.danilkha.game.api.GameLobby;
+import org.danilkha.game.round.Round;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lobby {
+public class Lobby implements GameLobby {
+
+    private static final int maxPlayers = 4;
 
     private final String name;
     private final int hostUserId;
 
-    private final List<Integer> memberUserIds;
+    private final List<Player> members;
 
-    public Lobby(String name, int hostUserId) {
+    private Round currentRound = null;
+
+
+    public Lobby(String name, Player host) {
         this.name = name;
-        this.hostUserId = hostUserId;
-        memberUserIds = new ArrayList<>();
-        memberUserIds.add(hostUserId);
+        this.hostUserId = host.getId();
+        members = new ArrayList<>();
+        members.add(host);
     }
 
-    public boolean addUser(int userId){
-        if (memberUserIds.size() >= 4){
+    @Override
+    public boolean startGame() {
+        return false;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return false;
+    }
+
+    @Override
+    public boolean joinPlayer(Player player) {
+        if(members.size() > maxPlayers){
             return false;
         }
-        memberUserIds.add(userId);
-        return true;
+        members.add(player);
+        return false;
+    }
+
+    public Round getCurrentRound(){
+        return currentRound;
     }
 }
