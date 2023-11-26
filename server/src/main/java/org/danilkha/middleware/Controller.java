@@ -5,6 +5,9 @@ import org.danilkha.game.Game;
 import org.danilkha.game.Player;
 import org.danilkha.middleware.utils.GamePackageReceiver;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Controller extends GamePackageReceiver {
 
     private final Game game;
@@ -17,7 +20,10 @@ public class Controller extends GamePackageReceiver {
 
     @Override
     public void receiveData(int clientId, String data) {
-        server.receiveData(clientId, data);
+        if(data.equals("getDate")){
+            System.out.println("got data: "+data);
+            server.receiveData(clientId, new SimpleDateFormat().format(new Date()));
+        }
     }
 
     @Override

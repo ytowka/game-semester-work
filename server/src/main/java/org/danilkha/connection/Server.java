@@ -1,20 +1,18 @@
 package org.danilkha.connection;
 
-import org.danilkha.connection.api.ClientConnection;
 import org.danilkha.connection.api.ClientPackageReceiver;
+import org.danilkha.connection.api.ServerSocketClientConnection;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Server implements ClientPackageReceiver{
 
     private final ServerSocket serverSocket;
-    private final Map<Integer, ClientConnection> clientConnectionList;
+    private final Map<Integer, ServerSocketClientConnection> clientConnectionList;
     private ClientPackageReceiver clientPackageReceiver;
 
     private final int tickRate;
@@ -23,6 +21,7 @@ public class Server implements ClientPackageReceiver{
 
     public Server(int port, int tickRate) throws IOException {
         serverSocket = new ServerSocket(port);
+        System.out.println("serever started");
         clientConnectionList = new HashMap<>();
         this.tickRate = tickRate;
     }
@@ -37,10 +36,11 @@ public class Server implements ClientPackageReceiver{
                 Socket socket = serverSocket.accept();
                 int id = idSequence;
                 idSequence++;
-                SocketClientConnection clientConnection = new SocketClientConnection(id, socket, (data) ->{
+                ServerSocketClientConnection clientConnection = new ServerSocketClientConnection(id, socket, (data) ->{
                     clientPackageReceiver.receiveData(id, data);
                 });
                 clientConnection.start();
+                System.out.println("client connected %s".formatted(id));
                 clientConnectionList.put(id, clientConnection);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -50,7 +50,7 @@ public class Server implements ClientPackageReceiver{
 
     @Override
     public void receiveData(int clientId, String data) {
-        ClientConnection clientConnection = clientConnectionList.get(clientId);
-        clientConnection.emitData(data);
+        ServerSocketClientConnection clientConnection = clientConnectionList.get(clientId);
+        clientConnection.receiveData(data);
     }
 }

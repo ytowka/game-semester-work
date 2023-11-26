@@ -1,8 +1,5 @@
 package org.danilkha.connection;
 
-import org.danilkha.connection.api.ClientConnection;
-import org.danilkha.connection.api.PackageReceiver;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,9 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class SocketClientConnection implements ClientConnection {
-
-    private final int id;
+public class SocketClientConnection implements PackageReceiver {
     private final Socket socket;
 
     private final PrintWriter writer;
@@ -25,8 +20,7 @@ public class SocketClientConnection implements ClientConnection {
 
     private final ArrayBlockingQueue<String> messageQueue;
 
-    public SocketClientConnection(int id, Socket socket, PackageReceiver packageReceiver) throws IOException {
-        this.id = id;
+    public SocketClientConnection(Socket socket, PackageReceiver packageReceiver) throws IOException {
         this.socket = socket;
 
         receiverThread = new Thread(this::runReceiver);
@@ -41,7 +35,7 @@ public class SocketClientConnection implements ClientConnection {
         while (true){
             try {
                 String data = reader.readLine();
-                packageReceiver.receivePackage(data);
+                packageReceiver.receiveData(data);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -61,20 +55,13 @@ public class SocketClientConnection implements ClientConnection {
         }
     }
 
-
-
-    @Override
-    public int getId(){
-        return id;
-    }
-
-    @Override
-    public void emitData(String data) {
-        messageQueue.add(data);
-    }
-
     public void start(){
         receiverThread.start();
         emitterThread.start();
+    }
+
+    @Override
+    public void receiveData(String data) {
+        messageQueue.add(data);
     }
 }
