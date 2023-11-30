@@ -1,4 +1,4 @@
-package org.danilkha;
+package org.danilkha.api;
 
 public interface ClientLobbyCallback {
     boolean createNewLobby(String name, String playerName);
