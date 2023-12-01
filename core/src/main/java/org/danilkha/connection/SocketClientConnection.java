@@ -20,6 +20,8 @@ public class SocketClientConnection implements PackageReceiver {
 
     private final ArrayBlockingQueue<String> messageQueue;
 
+    private DisconnectListener disconnectListener = e -> {};
+
     public SocketClientConnection(Socket socket, PackageReceiver packageReceiver) throws IOException {
         this.socket = socket;
 
@@ -37,7 +39,7 @@ public class SocketClientConnection implements PackageReceiver {
                 String data = reader.readLine();
                 packageReceiver.receiveData(data);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                disconnectListener.onDisconnect(e);
             }
         }
     }
@@ -48,7 +50,7 @@ public class SocketClientConnection implements PackageReceiver {
                 String data = messageQueue.take();
                 writer.println(data);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                disconnectListener.onDisconnect(e);
             }finally {
                 writer.flush();
             }
@@ -63,5 +65,9 @@ public class SocketClientConnection implements PackageReceiver {
     @Override
     public void receiveData(String data) {
         messageQueue.add(data);
+    }
+
+    public void setDisconnectListener(DisconnectListener disconnectListener){
+        this.disconnectListener = disconnectListener;
     }
 }

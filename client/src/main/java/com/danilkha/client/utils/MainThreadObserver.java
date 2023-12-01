@@ -1,7 +1,6 @@
-package com.danilkha.client;
+package com.danilkha.client.utils;
 
 import javafx.application.Platform;
-import org.danilkha.utils.observable.ObservableValue;
 import org.danilkha.utils.observable.Observer;
 
 public class MainThreadObserver<T> implements Observer<T> {
