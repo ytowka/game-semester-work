@@ -19,9 +19,28 @@ public class LobbyApiImpl extends Api implements LobbyApi{
     @Override
     public ObservableValue<List<Lobby>> subscribeActiveLobbies() {
         return subscribe(SUBSCRIBE_LOBBIES).map(string -> Arrays.
-                stream(string.split(","))
+                stream(string[0].split(","))
                 .map(Lobby::fromString).toList()
         );
+    }
+
+    @Override
+    public Completable<List<Lobby>> getAllLobbies() {
+            Completable<List<Lobby>> lobbies = new Completable<>();
+         get(SUBSCRIBE_LOBBIES, new Call<>() {
+            @Override
+            public void onSuccess(String[] data) {
+                lobbies.complete(Arrays.stream(data[0].split(","))
+                        .map(Lobby::fromString).toList());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                t.printStackTrace();
+                lobbies.complete(null);
+            }
+        });
+         return lobbies;
     }
 
     @Override

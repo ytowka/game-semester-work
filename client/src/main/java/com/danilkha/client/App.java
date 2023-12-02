@@ -1,50 +1,56 @@
 package com.danilkha.client;
 
+import com.danilkha.client.di.ServiceLocator;
 import com.danilkha.client.presentation.AppScreen;
 import com.danilkha.client.presentation.menu.MenuModel;
+import com.danilkha.client.presentation.name.NameModel;
+import com.danilkha.client.utils.BaseScreen;
 import com.danilkha.client.utils.LiveData;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.danilkha.connection.SocketClientConnection;
-
-import java.io.IOException;
+import org.danilkha.api.LobbyApi;
+import org.danilkha.game.Lobby;
+import org.danilkha.utils.observable.EqualityPolicy;
 
 public class App extends Application {
 
-    private SocketClientConnection clientConnection;
+    private LiveData<BaseScreen<?>> currentScreen = new LiveData<>(EqualityPolicy.REFERENTIAL);
+    ServiceLocator serviceLocator = ServiceLocator.getInstance();
+    LobbyApi lobbyApi = serviceLocator.lobbyApi.get();
 
+    NameModel.Callback nameCallback = name -> {
 
-    private LiveData<AppScreen> currentScreen = new LiveData<>(AppScreen.MainMenu);
+    };
+
+    MenuModel.Callback menuCallback = new MenuModel.Callback() {
+        @Override
+        public void onLobbySelected(Lobby lobby) {
+            currentScreen.setValue(new NameModel(nameCallback, lobbyApi, lobby));
+        }
+
+        @Override
+        public void onCreateNewLobbyClicked() {
+            System.out.println("onCreateNewLobbyClicked");
+            currentScreen.setValue(new NameModel(nameCallback, lobbyApi, null));
+        }
+    };
 
     @Override
-    public void start(Stage stage) throws IOException {
-        stage.setTitle("Hello!");
+    public void start(Stage stage) {
+        stage.setTitle("Tanchiki");
 
         currentScreen.addObserver(value ->{
-            switch (value){
-                case MainMenu -> stage.setScene(new MenuModel().scene);
-                case NickName -> {
-                }
-                case Lobby -> {
-                }
-                case Game -> {
-                }
+
+            if(value != null){
+                System.out.println("change screem "+value.getClass().getName());
+                stage.setScene(value.scene);
             }
         });
 
+        currentScreen.setValue(new MenuModel(lobbyApi, menuCallback));
+
         stage.show();
-        /*Socket socket = new Socket(ServerConfig.HOST, ServerConfig.PORT);
-        clientConnection = new SocketClientConnection(socket, (data -> {
-            Platform.runLater(() ->{
-                //helloController.welcomeText.setText(data);
-            });
-        }));
-
-       *//* helloController.setOnClickListener(() ->{
-            clientConnection.receiveData("getDate");
-        });*//*
-
-        clientConnection.start();*/
+        serviceLocator.socketClientConnection.get().start();
     }
 
     public static void main(String[] args) {

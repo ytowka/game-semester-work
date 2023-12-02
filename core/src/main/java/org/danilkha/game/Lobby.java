@@ -7,7 +7,7 @@ public record Lobby(
 
     public static Lobby fromString(String serialized){
         String args = serialized.replaceAll("[{}]","");
-        String[] splitted = args.split(",");
+        String[] splitted = args.split("&");
         String name = splitted[0];
         String[] players = splitted[1].replaceAll("[\\[\\]]","").split("\\+");
         return new Lobby(name, players);
@@ -17,7 +17,7 @@ public record Lobby(
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append(hostName);
-        sb.append(",");
+        sb.append("&");
         sb.append("[");
         sb.append(String.join("+",playerNames));
         sb.append("]}");

@@ -9,13 +9,14 @@ import java.util.List;
 
 public interface LobbyApi {
 
-    public static final String CREATE_NEW_LOBBY = "lobby/new";
-    public static final String SUBSCRIBE_LOBBIES = "lobby/all";
-    public static final String CONNECT_TO_LOBBY = "lobby/connect";
-    public static final String LEAVE_LOBBY = "lobby/leave";
-    public static final String START_GAME = "lobby/start";
+    String CREATE_NEW_LOBBY = "lobby/new";
+    String SUBSCRIBE_LOBBIES = "lobby/all";
+    String CONNECT_TO_LOBBY = "lobby/connect";
+    String LEAVE_LOBBY = "lobby/leave";
+    String START_GAME = "lobby/start";
 
     ObservableValue<List<Lobby>> subscribeActiveLobbies();
+    Completable<List<Lobby>> getAllLobbies();
     Completable<Boolean> createNewLobby(String name, String playerName);
     Completable<Boolean> connectToLobby(String name, String playerName);
     Completable<Boolean> leaveLobby();

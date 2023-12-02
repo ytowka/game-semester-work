@@ -21,7 +21,9 @@ public class Completable<T> {
 
     public void addObserver(Observer<T> observer){
         observer.onChange(value);
-        observers.add(observer);
+        if(value == null){
+            observers.add(observer);
+        }
     }
 
     public void clearObservers(){

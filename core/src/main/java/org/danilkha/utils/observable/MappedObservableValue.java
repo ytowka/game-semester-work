@@ -20,13 +20,22 @@ public class MappedObservableValue<T, R> implements ObservableValue<R> {
 
     @Override
     public R getValue() {
-       return mapper.apply(original.getValue());
+        if(original.getValue() != null){
+            return mapper.apply(original.getValue());
+        }else{
+            return mapper.apply(null);
+        }
+
     }
 
     @Override
     public void addObserver(Observer<R> observer) {
         Observer<T> newObserver = value -> {
-            observer.onChange(mapper.apply(value));
+            if(value != null){
+                observer.onChange(mapper.apply(value));
+            }else{
+                observer.onChange(null);
+            }
         };
         newObservers.put(observer, newObserver);
         original.addObserver(newObserver);

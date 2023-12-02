@@ -42,6 +42,10 @@ public class Server implements ClientPackageReceiver{
                 clientConnection.start();
                 System.out.println("client connected %s".formatted(id));
                 clientConnectionList.put(id, clientConnection);
+                clientConnection.setDisconnectListener(e -> {
+                    clientConnectionList.remove(id);
+                    System.out.println("client disconnected %s".formatted(id));
+                });
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

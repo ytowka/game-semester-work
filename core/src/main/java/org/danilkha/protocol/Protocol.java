@@ -10,6 +10,7 @@ public class Protocol {
     public static final String DROP_PREFIX = "-";
 
     public static final String REQUEST_DATA_DELIMETER = ":";
+    public static final String DATA_DELIMINTER = ";";
 
     public static boolean isGetRequest(String data){
         return data.startsWith(GET_PREFIX);
@@ -36,7 +37,7 @@ public class Protocol {
         sb.append(REQUEST_DATA_DELIMETER);
         if(data.length > 0){
             sb.append("{");
-            sb.append(String.join(",",data));
+            sb.append(String.join(DATA_DELIMINTER,data));
             sb.append("}");
         }
 
@@ -45,7 +46,7 @@ public class Protocol {
 
     public static Response ParseResponse(String rawData){
         String[] splittedData = rawData.substring(1).split(REQUEST_DATA_DELIMETER);
-        String data = splittedData[1].replace("{", "").replace("}","");
-        return new Response(splittedData[0], data);
+        String data = splittedData[1].substring(1, splittedData[1].length()-1);
+        return new Response(splittedData[0], data.split(DATA_DELIMINTER));
     }
 }

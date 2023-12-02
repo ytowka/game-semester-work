@@ -33,12 +33,12 @@ public class MutableObservableValue<T> implements ObservableValue<T> {
 
     public synchronized void setValue(T newValue){
         boolean isChanged = switch (equalityPolicy){
-            case REFERENTIAL -> value == newValue;
+            case REFERENTIAL -> value != newValue;
             case STRUCTURAL -> {
                 if(value == null){
                     yield newValue != null;
                 }else{
-                    yield value.equals(newValue);
+                    yield !value.equals(newValue);
                 }
             }
         };
