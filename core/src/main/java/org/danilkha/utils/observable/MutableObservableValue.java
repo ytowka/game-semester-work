@@ -49,6 +49,12 @@ public class MutableObservableValue<T> implements ObservableValue<T> {
         }
     }
 
+    public synchronized void invalidate(){
+        if(equalityPolicy == EqualityPolicy.NEVER){
+            observers.forEach(observer -> observer.onChange(value));
+        }
+    }
+
     @Override
     public T getValue(){
         return value;

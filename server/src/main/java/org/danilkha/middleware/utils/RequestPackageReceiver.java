@@ -6,6 +6,7 @@ import org.danilkha.middleware.RequestHandler;
 import org.danilkha.protocol.Protocol;
 
 public abstract class RequestPackageReceiver implements ClientPackageReceiver, RequestHandler {
+
     @Override
     public final void receiveData(int clientId, String data) {
         Request.Type type;

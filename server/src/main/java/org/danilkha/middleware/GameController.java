@@ -1,11 +1,11 @@
 package org.danilkha.middleware;
 
+import org.danilkha.api.LobbyApi;
 import org.danilkha.connection.Server;
 import org.danilkha.game.Game;
 import org.danilkha.game.Player;
-import org.danilkha.middleware.utils.GamePackageReceiver;
 
-public class GameController extends GamePackageReceiver {
+public class GameController extends RouterController {
 
     private final Game game;
     private final Server server;
@@ -13,34 +13,38 @@ public class GameController extends GamePackageReceiver {
     public GameController(Game game, Server server) {
         this.game = game;
         this.server = server;
-    }
 
+        addRoute(LobbyApi.START_GAME, request -> {
+            System.out.println("start game in lobby "+ request.clientId());
+            Player player = game.getPlayerByClientId(request.clientId());
+            player.getConnectedLobby().startGame();
+            server.receiveData(request.clientId());
+        });
 
-    @Override
-    public boolean createNewLobby(int clientId, String name, String playerName) {
-        return game.createNewLobby(clientId, name, playerName);
-    }
+        addRoute(LobbyApi.CREATE_NEW_LOBBY, request -> {
+            System.out.println("create new lobby: "+request.data()[0]);
+            String playerName = request.data()[0];
+            game.createNewLobby(request.clientId(), playerName, playerName);
+        });
 
-    @Override
-    public boolean connectToLobby(int playerId, String name) {
-        return game.connectToLobby(playerId, name);
-    }
+        addRoute(LobbyApi.CONNECT_TO_LOBBY, request -> {
+            System.out.println("connect to lobby: "+request.clientId());
+            String host = request.data()[0];
+            String playerName = request.data()[1];
+            game.connectToLobby(request.clientId(), host, playerName);
+        });
 
-    @Override
-    public void moveTo(int playerId, float x, float y) {
-        Player player = game.getPlayerByClientId(playerId);
-        player.getConnectedLobby().getCurrentRound().moveTo(playerId, x, y);
-    }
+        addRoute(LobbyApi.LEAVE_LOBBY, request -> {
 
-    @Override
-    public void shoot(int playerId, float directionAngle) {
-        Player player = game.getPlayerByClientId(playerId);
-        player.getConnectedLobby().getCurrentRound().shoot(playerId, directionAngle);
-    }
+        });
 
-    @Override
-    public void hit(int fromId, int toId) {
-        Player player = game.getPlayerByClientId(fromId);
-        player.getConnectedLobby().getCurrentRound().hit(fromId, toId);
+        addRoute(LobbyApi.LOBBY_PLAYERS, request -> {
+            System.out.println("request all lobbies");
+
+        });
+
+        addRoute(LobbyApi.SUBSCRIBE_LOBBIES, request -> {
+
+        });
     }
 }

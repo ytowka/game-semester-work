@@ -1,17 +1,19 @@
 package org.danilkha.game;
 
-import org.danilkha.game.api.GameLobbyListener;
+import org.danilkha.utils.observable.EqualityPolicy;
+import org.danilkha.utils.observable.MutableObservableValue;
+import org.danilkha.utils.observable.ObservableValue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class Game implements GameLobbyListener {
+public class Game {
 
     private final Map<String, Lobby> lobbies;
 
-    private Map<String, Lobby> getLobbies() {
-        return lobbies;
-    }
+    private MutableObservableValue<List<Lobby>> listObservableValue = new MutableObservableValue<>(new ArrayList<>(), EqualityPolicy.NEVER);
 
     private Map<Integer, Player> players;
 
@@ -20,7 +22,6 @@ public class Game implements GameLobbyListener {
         players = new HashMap<>();
     }
 
-    @Override
     public boolean createNewLobby(int playerId, String roomName, String playerName) {
         if(lobbies.containsKey(roomName)) {
             return false;
@@ -30,13 +31,14 @@ public class Game implements GameLobbyListener {
         host.setConnectedLobby(lobby);
         lobbies.put(roomName, lobby);
         players.put(playerId, host);
+        listObservableValue.getValue().add(lobby);
+        listObservableValue.invalidate();
         return true;
     }
 
-    @Override
-    public boolean connectToLobby(int playerId, String name) {
-        Player player = new Player(name, playerId);
-        Lobby lobby = lobbies.get(name);
+    public boolean connectToLobby(int playerId, String host, String playerName) {
+        Player player = new Player(playerName, playerId);
+        Lobby lobby = lobbies.get(host);
         lobby.joinPlayer(player);
         player.setConnectedLobby(lobby);
         players.put(playerId, player);
@@ -45,6 +47,14 @@ public class Game implements GameLobbyListener {
 
     public Map<Integer, Player> getPlayers() {
         return players;
+    }
+
+    private Map<String, Lobby> getLobbies() {
+        return lobbies;
+    }
+
+    public ObservableValue<List<Lobby>> subscribeLobbies(){
+        return listObservableValue;
     }
 
     public Player getPlayerByClientId(int id){

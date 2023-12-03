@@ -1,12 +1,14 @@
 package org.danilkha.game;
 
-import org.danilkha.game.api.GameLobby;
 import org.danilkha.game.round.Round;
+import org.danilkha.utils.observable.EqualityPolicy;
+import org.danilkha.utils.observable.MutableObservableValue;
+import org.danilkha.utils.observable.ObservableValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lobby implements GameLobby {
+public class Lobby{
 
     private static final int maxPlayers = 4;
 
@@ -14,6 +16,9 @@ public class Lobby implements GameLobby {
     private final int hostUserId;
 
     private final List<Player> members;
+    private final MutableObservableValue<List<Player>> observableMembers;
+
+    private final MutableObservableValue<Boolean> isGameStarted;
 
     private Round currentRound = null;
 
@@ -23,24 +28,31 @@ public class Lobby implements GameLobby {
         this.hostUserId = host.getId();
         members = new ArrayList<>();
         members.add(host);
+        observableMembers = new MutableObservableValue<>(members, EqualityPolicy.NEVER);
+        isGameStarted = new MutableObservableValue<>(false);
     }
 
-    @Override
+
     public boolean startGame() {
+        if(members.size() > 1){
+            isGameStarted.setValue(true);
+            return true;
+        }
         return false;
     }
 
-    @Override
-    public boolean isStarted() {
-        return false;
+
+    public ObservableValue<Boolean> isStarted() {
+        return isGameStarted;
     }
 
-    @Override
+
     public boolean joinPlayer(Player player) {
         if(members.size() > maxPlayers){
             return false;
         }
         members.add(player);
+        observableMembers.invalidate();
         return false;
     }
 

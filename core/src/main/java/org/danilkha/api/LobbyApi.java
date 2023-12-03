@@ -16,7 +16,6 @@ public interface LobbyApi {
     String START_GAME = "lobby/start";
 
     ObservableValue<List<LobbyDto>> subscribeActiveLobbies();
-
     ObservableValue<String[]> subscribeLobbyPlayers();
     Completable<List<LobbyDto>> getAllLobbies();
     Completable<Boolean> createNewLobby(String playerName);

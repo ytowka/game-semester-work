@@ -43,17 +43,32 @@ public class Protocol {
         return DROP_PREFIX + buildRequest(request, data);
     }
 
-    private static String buildRequest(String request, String... data){
+    public static String buildData(String... data){
+        return "{"+String.join(DATA_DELIMINTER,data)+"}";
+    }
+
+    private static String[] parseData(String raw){
+        return raw.substring(1, raw.length()-1).split(DATA_DELIMINTER);
+    }
+
+    public static String buildRequest(String request, String... data){
         StringBuilder sb = new StringBuilder();
         sb.append(request);
         sb.append(REQUEST_DATA_DELIMETER);
         if(data.length > 0){
-            sb.append("{");
-            sb.append(String.join(DATA_DELIMINTER,data));
-            sb.append("}");
+            sb.append(buildData(data));
         }
 
         return sb.toString();
+    }
+
+    public static String buildResponse(Response response){
+        String prefix = switch (response.type()){
+            case GIVE -> GIVE_PREFIX;
+            case EMIT -> EMIT_PREFIX;
+            case RAW -> DROP_PREFIX;
+        };
+        return prefix+response.request()+REQUEST_DATA_DELIMETER+buildData(response.data());
     }
 
     public static Response ParseResponse(String rawData){
@@ -66,7 +81,6 @@ public class Protocol {
             type = Response.Type.RAW;
         }
         String[] splittedData = rawData.substring(1).split(REQUEST_DATA_DELIMETER);
-        String data = splittedData[1].substring(1, splittedData[1].length()-1);
-        return new Response(type, splittedData[0], data.split(DATA_DELIMINTER));
+        return new Response(type, splittedData[0], parseData(splittedData[1]));
     }
 }
