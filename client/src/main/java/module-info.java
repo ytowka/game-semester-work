@@ -12,4 +12,7 @@ module com.danilkha.client {
 
     exports com.danilkha.client.presentation.name;
     opens com.danilkha.client.presentation.name to javafx.fxml;
+
+    exports com.danilkha.client.presentation.lobby;
+    opens com.danilkha.client.presentation.lobby to javafx.fxml;
 }

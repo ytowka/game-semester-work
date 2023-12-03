@@ -1,9 +1,11 @@
 package com.danilkha.client.presentation.menu;
 
+import com.danilkha.client.presentation.AppScreen;
+import com.danilkha.client.presentation.Navigator;
 import com.danilkha.client.utils.BaseScreen;
 import com.danilkha.client.utils.LiveData;
 import org.danilkha.api.LobbyApi;
-import org.danilkha.game.Lobby;
+import org.danilkha.game.LobbyDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +13,16 @@ import java.util.List;
 public class MenuModel extends BaseScreen<MenuController> {
 
     private final LobbyApi api;
-    private final Callback listener;
+    private final Navigator<AppScreen> navigator;
 
-    public LiveData<List<Lobby>> lobbies = new LiveData<>(new ArrayList<>());
+    public LiveData<List<LobbyDto>> lobbies = new LiveData<>(new ArrayList<>());
 
-    public MenuModel(LobbyApi lobbyApi, Callback listener) {
+    public MenuModel(LobbyApi lobbyApi, Navigator<AppScreen> navigator) {
         super("menu.fxml");
         controller.init(this);
 
-        this.listener = listener;
         this.api = lobbyApi;
+        this.navigator = navigator;
 
         api.subscribeActiveLobbies().addObserver(value -> {
             lobbies.postValue(value);
@@ -28,16 +30,11 @@ public class MenuModel extends BaseScreen<MenuController> {
     }
 
     public void onLobbySelected(int index){
-        Lobby lobby = lobbies.getValue().get(index);
-        listener.onLobbySelected(lobby);
+        LobbyDto lobbyDto = lobbies.getValue().get(index);
+        navigator.navigate(new AppScreen.LobbyRoom(lobbyDto));
     }
 
     public void onCreateNewLobbyClicked(){
-        listener.onCreateNewLobbyClicked();
-    }
-
-    public interface Callback {
-        void onLobbySelected(Lobby lobby);
-        void onCreateNewLobbyClicked();
+        navigator.navigate(new AppScreen.LobbyRoom(null));
     }
 }

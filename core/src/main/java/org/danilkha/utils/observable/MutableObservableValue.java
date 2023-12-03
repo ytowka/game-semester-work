@@ -41,6 +41,7 @@ public class MutableObservableValue<T> implements ObservableValue<T> {
                     yield !value.equals(newValue);
                 }
             }
+            case NEVER -> true;
         };
         if(isChanged){
             value = newValue;

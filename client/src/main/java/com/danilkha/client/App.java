@@ -2,6 +2,7 @@ package com.danilkha.client;
 
 import com.danilkha.client.di.ServiceLocator;
 import com.danilkha.client.presentation.AppScreen;
+import com.danilkha.client.presentation.Navigator;
 import com.danilkha.client.presentation.menu.MenuModel;
 import com.danilkha.client.presentation.name.NameModel;
 import com.danilkha.client.utils.BaseScreen;
@@ -9,12 +10,12 @@ import com.danilkha.client.utils.LiveData;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.danilkha.api.LobbyApi;
-import org.danilkha.game.Lobby;
+import org.danilkha.game.LobbyDto;
 import org.danilkha.utils.observable.EqualityPolicy;
 
-public class App extends Application {
+public class App extends Application implements Navigator<AppScreen> {
 
-    private LiveData<BaseScreen<?>> currentScreen = new LiveData<>(EqualityPolicy.REFERENTIAL);
+    private LiveData<AppScreen> currentScreen = new LiveData<>(new AppScreen.Menu());
     ServiceLocator serviceLocator = ServiceLocator.getInstance();
     LobbyApi lobbyApi = serviceLocator.lobbyApi.get();
 
@@ -22,32 +23,27 @@ public class App extends Application {
 
     };
 
-    MenuModel.Callback menuCallback = new MenuModel.Callback() {
-        @Override
-        public void onLobbySelected(Lobby lobby) {
-            currentScreen.setValue(new NameModel(nameCallback, lobbyApi, lobby));
-        }
-
-        @Override
-        public void onCreateNewLobbyClicked() {
-            System.out.println("onCreateNewLobbyClicked");
-            currentScreen.setValue(new NameModel(nameCallback, lobbyApi, null));
-        }
-    };
 
     @Override
     public void start(Stage stage) {
         stage.setTitle("Tanchiki");
 
-        currentScreen.addObserver(value ->{
 
+        currentScreen.addObserver(value ->{
             if(value != null){
-                System.out.println("change screem "+value.getClass().getName());
-                stage.setScene(value.scene);
+                switch (value){
+                    case AppScreen.Menu ignored -> {
+                        stage.setScene(new MenuModel(lobbyApi, this).scene);
+                    }
+                    case AppScreen.NameInput nameInputScreen -> {
+                        stage.setScene(new NameModel(nameInputScreen.lobby(), this).scene);
+                    }
+                    case AppScreen.LobbyRoom lobbyRoomScreen -> {
+                        stage.setScene(new MenuModel(lobbyApi, this).scene);
+                    }
+                }
             }
         });
-
-        currentScreen.setValue(new MenuModel(lobbyApi, menuCallback));
 
         stage.show();
         serviceLocator.socketClientConnection.get().start();
@@ -55,5 +51,10 @@ public class App extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    @Override
+    public void navigate(AppScreen route) {
+        currentScreen.setValue();
     }
 }

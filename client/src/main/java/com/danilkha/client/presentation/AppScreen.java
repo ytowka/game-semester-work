@@ -1,8 +1,12 @@
 package com.danilkha.client.presentation;
 
-public enum AppScreen {
-    MainMenu,
-    NickName,
-    Lobby,
-    Game,
+import org.danilkha.game.LobbyDto;
+
+public sealed interface AppScreen permits AppScreen.Menu, AppScreen.NameInput, AppScreen.LobbyRoom {
+    final class Menu implements AppScreen{}
+    record NameInput(
+            LobbyDto lobby
+    ) implements AppScreen{ }
+
+    record LobbyRoom(LobbyDto lobbyDto) implements AppScreen{}
 }

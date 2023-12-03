@@ -17,6 +17,9 @@ public class Api implements PackageReceiver {
     private final Map<String, ApiCall<String[]>> calls;
     private final Map<String, MutableObservableValue<String[]>> subscribedKeys;
 
+    private final MutableObservableValue<String> _rawInput = new MutableObservableValue<>();
+    public final ObservableValue<String> rawInput = _rawInput;
+
     private final PackageReceiver server;
 
     public Api(PackageReceiver server){
@@ -59,30 +62,37 @@ public class Api implements PackageReceiver {
         server.receiveData(Protocol.buildDropRequest(request, data));
     }
 
-    ObservableValue<String[]> subscribe(String key){
+    ObservableValue<String[]> subscribe(String key, String... data){
         MutableObservableValue<String[]> stringObservableValue = new MutableObservableValue<>();
         subscribedKeys.put(key, stringObservableValue);
+        server.receiveData(Protocol.buildSubscribeRequest(key, data));
         return stringObservableValue;
     }
 
     @Override
-    public void receiveData(String data) {
+    public final void receiveData(String data) {
         Response response = Protocol.ParseResponse(data);
-        if(Protocol.isDropRequest(data)){
-            MutableObservableValue<String[]> observableValue = subscribedKeys.get(response.request());
-            if(observableValue != null){
-                observableValue.setValue(response.data());
-            }
-        }else if(Protocol.isGiveRequest(data)){
-            processResponse(response);
+
+        switch (response.type()){
+            case GIVE -> processGetResponse(response);
+            case EMIT -> processSubscriptionResponse(response);
+            case RAW -> _rawInput.setValue(response.data()[0]);
         }
+
     }
 
-    private void processResponse(Response response){
+    private void processGetResponse(Response response){
         Call<String[]> call = calls.get(response.request());
         if(call != null){
             call.onSuccess(response.data());
             calls.remove(response.request());
+        }
+    }
+
+    private void processSubscriptionResponse(Response response){
+        MutableObservableValue<String[]> observableValue = subscribedKeys.get(response.request());
+        if(observableValue != null){
+            observableValue.setValue(response.data());
         }
     }
 }

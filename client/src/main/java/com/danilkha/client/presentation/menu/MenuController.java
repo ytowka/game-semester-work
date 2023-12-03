@@ -1,15 +1,12 @@
 package com.danilkha.client.presentation.menu;
 
-import javafx.beans.Observable;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import org.danilkha.game.Lobby;
+import org.danilkha.game.LobbyDto;
 
 public class MenuController {
 
@@ -28,7 +25,11 @@ public class MenuController {
         model = menuModel;
 
         ObservableList<String> listData = FXCollections.observableArrayList();
-        model.lobbies.addObserver(lobbies -> listData.setAll(lobbies.stream().map(MenuController::lobbyForamtter).toList()));
+        model.lobbies.addObserver(lobbies -> {
+            if(lobbies != null){
+                listData.setAll(lobbies.stream().map(MenuController::lobbyForamtter).toList());
+            }
+        });
 
         listLobbies.setItems(listData);
 
@@ -43,7 +44,7 @@ public class MenuController {
         model.onCreateNewLobbyClicked();
     }
 
-    private static String lobbyForamtter(Lobby lobby){
-        return lobby.hostName()+" "+lobby.playerNames().length+"/4";
+    private static String lobbyForamtter(LobbyDto lobbyDto){
+        return lobbyDto.hostName()+" "+ lobbyDto.playerNames().length+"/4";
     }
 }

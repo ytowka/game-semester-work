@@ -1,13 +1,17 @@
 package org.danilkha.protocol;
 
+import org.danilkha.connection.Request;
 import org.danilkha.connection.Response;
 
 import java.util.Collections;
 
 public class Protocol {
     public static final String GET_PREFIX = ">";
-    public static final String GIVE_PREFIX = "<";
     public static final String DROP_PREFIX = "-";
+    public static final String SUBSCRIBE_PREFIX = "=";
+
+    public static final String GIVE_PREFIX = "<";
+    public static final String EMIT_PREFIX = "&";
 
     public static final String REQUEST_DATA_DELIMETER = ":";
     public static final String DATA_DELIMINTER = ";";
@@ -23,8 +27,16 @@ public class Protocol {
         return data.startsWith(DROP_PREFIX);
     }
 
+    public static boolean isSubscribeRequest(String data){
+        return data.startsWith(SUBSCRIBE_PREFIX);
+    }
+
     public static String buildGetRequest(String request, String... data){
         return GET_PREFIX + buildRequest(request, data);
+    }
+
+    public static String buildSubscribeRequest(String request, String... data){
+        return SUBSCRIBE_PREFIX + buildRequest(request, data);
     }
 
     public static String buildDropRequest(String request, String... data){
@@ -45,8 +57,16 @@ public class Protocol {
     }
 
     public static Response ParseResponse(String rawData){
+        Response.Type type;
+        if(rawData.startsWith(GIVE_PREFIX)){
+            type = Response.Type.GIVE;
+        }else if(rawData.startsWith(EMIT_PREFIX)){
+            type = Response.Type.EMIT;
+        }else{
+            type = Response.Type.RAW;
+        }
         String[] splittedData = rawData.substring(1).split(REQUEST_DATA_DELIMETER);
         String data = splittedData[1].substring(1, splittedData[1].length()-1);
-        return new Response(splittedData[0], data.split(DATA_DELIMINTER));
+        return new Response(type, splittedData[0], data.split(DATA_DELIMINTER));
     }
 }

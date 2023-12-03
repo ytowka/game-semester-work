@@ -1,3 +1,3 @@
 package org.danilkha.utils.observable;
 
-public enum EqualityPolicy { REFERENTIAL, STRUCTURAL }
+public enum EqualityPolicy { REFERENTIAL, STRUCTURAL, NEVER }

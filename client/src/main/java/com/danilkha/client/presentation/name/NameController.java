@@ -22,6 +22,7 @@ public class NameController {
         this.model = model;
 
         model.error.addObserver(error -> {
+            errorLabel.setVisible(true);
             errorLabel.setText(error);
         });
     }

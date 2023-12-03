@@ -3,7 +3,7 @@ package com.danilkha.client.api;
 import org.danilkha.api.LobbyApi;
 import org.danilkha.connection.Call;
 import org.danilkha.connection.PackageReceiver;
-import org.danilkha.game.Lobby;
+import org.danilkha.game.LobbyDto;
 import org.danilkha.utils.observable.Completable;
 import org.danilkha.utils.observable.ObservableValue;
 
@@ -17,21 +17,23 @@ public class LobbyApiImpl extends Api implements LobbyApi{
     }
 
     @Override
-    public ObservableValue<List<Lobby>> subscribeActiveLobbies() {
-        return subscribe(SUBSCRIBE_LOBBIES).map(string -> Arrays.
-                stream(string[0].split(","))
-                .map(Lobby::fromString).toList()
-        );
+    public ObservableValue<List<LobbyDto>> subscribeActiveLobbies() {
+        return subscribe(SUBSCRIBE_LOBBIES).map(data -> Arrays.stream(data).map(LobbyDto::fromString).toList());
     }
 
     @Override
-    public Completable<List<Lobby>> getAllLobbies() {
-            Completable<List<Lobby>> lobbies = new Completable<>();
+    public ObservableValue<String[]> subscribeLobbyPlayers() {
+        return subscribe(LOBBY_PLAYERS);
+    }
+
+    @Override
+    public Completable<List<LobbyDto>> getAllLobbies() {
+            Completable<List<LobbyDto>> lobbies = new Completable<>();
          get(SUBSCRIBE_LOBBIES, new Call<>() {
             @Override
             public void onSuccess(String[] data) {
                 lobbies.complete(Arrays.stream(data[0].split(","))
-                        .map(Lobby::fromString).toList());
+                        .map(LobbyDto::fromString).toList());
             }
 
             @Override
@@ -44,12 +46,13 @@ public class LobbyApiImpl extends Api implements LobbyApi{
     }
 
     @Override
-    public Completable<Boolean> createNewLobby(String name, String playerName) {
-        return post(CREATE_NEW_LOBBY, name, playerName);
+    public Completable<Boolean> createNewLobby(String playerName) {
+        return post(CREATE_NEW_LOBBY, playerName);
     }
 
     @Override
     public Completable<Boolean> connectToLobby(String name, String playerName) {
+        System.out.println("connect to lobby");
         return post(CONNECT_TO_LOBBY, name, playerName);
     }
 

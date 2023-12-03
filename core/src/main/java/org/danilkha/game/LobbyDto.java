@@ -1,16 +1,16 @@
 package org.danilkha.game;
 
-public record Lobby(
+public record LobbyDto(
         String hostName,
         String[] playerNames
 ) {
 
-    public static Lobby fromString(String serialized){
+    public static LobbyDto fromString(String serialized){
         String args = serialized.replaceAll("[{}]","");
         String[] splitted = args.split("&");
         String name = splitted[0];
         String[] players = splitted[1].replaceAll("[\\[\\]]","").split("\\+");
-        return new Lobby(name, players);
+        return new LobbyDto(name, players);
     }
 
     public String serialize(){

@@ -40,6 +40,7 @@ public class SocketClientConnection implements PackageReceiver {
                 packageReceiver.receiveData(data);
             } catch (IOException e) {
                 disconnectListener.onDisconnect(e);
+                break;
             }
         }
     }
@@ -51,6 +52,7 @@ public class SocketClientConnection implements PackageReceiver {
                 writer.println(data);
             } catch (InterruptedException e) {
                 disconnectListener.onDisconnect(e);
+                break;
             }finally {
                 writer.flush();
             }

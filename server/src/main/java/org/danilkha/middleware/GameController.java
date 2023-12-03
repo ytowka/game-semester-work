@@ -5,26 +5,16 @@ import org.danilkha.game.Game;
 import org.danilkha.game.Player;
 import org.danilkha.middleware.utils.GamePackageReceiver;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-public class Controller extends GamePackageReceiver {
+public class GameController extends GamePackageReceiver {
 
     private final Game game;
     private final Server server;
 
-    public Controller(Game game, Server server) {
+    public GameController(Game game, Server server) {
         this.game = game;
         this.server = server;
     }
 
-    @Override
-    public void receiveData(int clientId, String data) {
-        if(data.equals("getDate")){
-            System.out.println("got data: "+data);
-            server.receiveData(clientId, new SimpleDateFormat().format(new Date()));
-        }
-    }
 
     @Override
     public boolean createNewLobby(int clientId, String name, String playerName) {
