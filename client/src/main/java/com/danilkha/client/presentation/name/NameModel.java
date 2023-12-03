@@ -41,14 +41,16 @@ public class NameModel extends BaseScreen<NameController> {
         }
         error.setValue(null);
         if(joiningLobbyDto == null){
-            api.createNewLobby(name);
-            navigator.navigate(new AppScreen.LobbyRoom(new LobbyDto(
-                    name,
-                    new String[]{name}
-            )));
+            api.createNewLobby(name).addObserver(b ->{
+                navigator.navigate(new AppScreen.LobbyRoom(new LobbyDto(
+                        name,
+                        new String[]{name}
+                ), name));
+            });
         }else{
-            api.connectToLobby(joiningLobbyDto.hostName(), name);
-            navigator.navigate(new AppScreen.LobbyRoom(joiningLobbyDto));
+            api.connectToLobby(joiningLobbyDto.hostName(), name).addObserver(b -> {
+                navigator.navigate(new AppScreen.LobbyRoom(joiningLobbyDto, name));
+            });
         }
     }
 

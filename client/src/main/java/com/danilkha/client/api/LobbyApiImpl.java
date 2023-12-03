@@ -18,7 +18,11 @@ public class LobbyApiImpl extends Api implements LobbyApi{
 
     @Override
     public ObservableValue<List<LobbyDto>> subscribeActiveLobbies() {
-        return subscribe(SUBSCRIBE_LOBBIES).map(data -> Arrays.stream(data).map(LobbyDto::fromString).toList());
+        return subscribe(SUBSCRIBE_LOBBIES).map(data -> {
+            System.out.println(data.length);
+                    return Arrays.stream(data).map(LobbyDto::fromString).toList();
+                }
+        );
     }
 
     @Override

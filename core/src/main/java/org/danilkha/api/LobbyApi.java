@@ -9,6 +9,8 @@ import java.util.List;
 public interface LobbyApi {
 
     String CREATE_NEW_LOBBY = "lobby/new";
+
+    // >lobby/all:{}
     String SUBSCRIBE_LOBBIES = "lobby/all";
     String CONNECT_TO_LOBBY = "lobby/connect";
     String LOBBY_PLAYERS = "lobby/players";

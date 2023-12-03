@@ -32,6 +32,9 @@ public class Lobby{
         isGameStarted = new MutableObservableValue<>(false);
     }
 
+    public String getName() {
+        return name;
+    }
 
     public boolean startGame() {
         if(members.size() > 1){
@@ -46,6 +49,9 @@ public class Lobby{
         return isGameStarted;
     }
 
+    public ObservableValue<List<Player>> getObservableMembers() {
+        return observableMembers;
+    }
 
     public boolean joinPlayer(Player player) {
         if(members.size() > maxPlayers){
@@ -56,7 +62,35 @@ public class Lobby{
         return false;
     }
 
+    public boolean leavePlayer(int userId){
+        if(userId ==  hostUserId){
+            return true;
+        }else{
+            Player player = null;
+            for (Player p : members){
+                if(p.getId() == userId){
+                    player = p;
+                    break;
+                }
+            }
+            if(player != null){
+                members.remove(player);
+                observableMembers.invalidate();
+            }
+            return false;
+        }
+    }
+
     public Round getCurrentRound(){
         return currentRound;
+    }
+
+    public LobbyDto toDto(){
+        return new LobbyDto(
+                name,
+                members.stream()
+                        .map(Player::getName)
+                        .toArray(String[]::new)
+        );
     }
 }

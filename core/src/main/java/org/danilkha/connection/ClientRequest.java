@@ -2,7 +2,7 @@ package org.danilkha.connection;
 
 import java.util.Arrays;
 
-public record Request(
+public record ClientRequest(
         int clientId,
         Type type,
         String path,
@@ -12,7 +12,7 @@ public record Request(
 
     @Override
     public String toString() {
-        return "Request{" +
+        return "ClientRequest{" +
                 "clientId=" + clientId +
                 ", type=" + type +
                 ", path='" + path + '\'' +

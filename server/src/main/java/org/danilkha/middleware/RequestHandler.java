@@ -1,7 +1,7 @@
 package org.danilkha.middleware;
 
-import org.danilkha.connection.Request;
+import org.danilkha.connection.ClientRequest;
 
 public interface RequestHandler {
-    void receiveRequest(Request request);
+    void receiveRequest(ClientRequest clientRequest);
 }

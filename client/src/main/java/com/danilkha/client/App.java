@@ -3,6 +3,7 @@ package com.danilkha.client;
 import com.danilkha.client.di.ServiceLocator;
 import com.danilkha.client.presentation.AppScreen;
 import com.danilkha.client.presentation.Navigator;
+import com.danilkha.client.presentation.lobby.LobbyModel;
 import com.danilkha.client.presentation.menu.MenuModel;
 import com.danilkha.client.presentation.name.NameModel;
 import com.danilkha.client.utils.BaseScreen;
@@ -19,11 +20,6 @@ public class App extends Application implements Navigator<AppScreen> {
     ServiceLocator serviceLocator = ServiceLocator.getInstance();
     LobbyApi lobbyApi = serviceLocator.lobbyApi.get();
 
-    NameModel.Callback nameCallback = name -> {
-
-    };
-
-
     @Override
     public void start(Stage stage) {
         stage.setTitle("Tanchiki");
@@ -31,16 +27,12 @@ public class App extends Application implements Navigator<AppScreen> {
 
         currentScreen.addObserver(value ->{
             if(value != null){
-                switch (value){
-                    case AppScreen.Menu ignored -> {
-                        stage.setScene(new MenuModel(lobbyApi, this).scene);
-                    }
-                    case AppScreen.NameInput nameInputScreen -> {
-                        stage.setScene(new NameModel(nameInputScreen.lobby(), this).scene);
-                    }
-                    case AppScreen.LobbyRoom lobbyRoomScreen -> {
-                        stage.setScene(new MenuModel(lobbyApi, this).scene);
-                    }
+                if (value instanceof AppScreen.Menu) {
+                    stage.setScene(new MenuModel(lobbyApi, this).scene);
+                } else if (value instanceof AppScreen.NameInput nameInputScreen) {
+                    stage.setScene(new NameModel(lobbyApi, nameInputScreen.lobby(), this).scene);
+                } else if (value instanceof AppScreen.LobbyRoom lobbyRoom) {
+                    stage.setScene(new LobbyModel(lobbyApi, lobbyRoom.lobbyDto(), lobbyRoom.playerName(), this).scene);
                 }
             }
         });
@@ -55,6 +47,6 @@ public class App extends Application implements Navigator<AppScreen> {
 
     @Override
     public void navigate(AppScreen route) {
-        currentScreen.setValue();
+        currentScreen.setValue(route);
     }
 }

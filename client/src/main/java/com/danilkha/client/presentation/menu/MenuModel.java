@@ -31,10 +31,10 @@ public class MenuModel extends BaseScreen<MenuController> {
 
     public void onLobbySelected(int index){
         LobbyDto lobbyDto = lobbies.getValue().get(index);
-        navigator.navigate(new AppScreen.LobbyRoom(lobbyDto));
+        navigator.navigate(new AppScreen.NameInput(lobbyDto));
     }
 
     public void onCreateNewLobbyClicked(){
-        navigator.navigate(new AppScreen.LobbyRoom(null));
+        navigator.navigate(new AppScreen.NameInput(null));
     }
 }

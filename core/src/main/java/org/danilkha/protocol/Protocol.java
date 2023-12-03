@@ -1,9 +1,6 @@
 package org.danilkha.protocol;
 
-import org.danilkha.connection.Request;
 import org.danilkha.connection.Response;
-
-import java.util.Collections;
 
 public class Protocol {
     public static final String GET_PREFIX = ">";
@@ -48,7 +45,12 @@ public class Protocol {
     }
 
     private static String[] parseData(String raw){
-        return raw.substring(1, raw.length()-1).split(DATA_DELIMINTER);
+        String unpacked = raw.substring(1, raw.length()-1);
+        if(unpacked.isEmpty()){
+            return new String[0];
+        }else{
+            return unpacked.split(DATA_DELIMINTER);
+        }
     }
 
     public static String buildRequest(String request, String... data){

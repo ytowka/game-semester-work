@@ -15,7 +15,7 @@ public abstract class BaseScreen<C> {
     public BaseScreen(String resourcePath) {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("presentation/"+resourcePath));
         try {
-            scene = new Scene(loader.load(), 1280,720);
+            scene = new Scene(loader.load());
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Screen root not found "+resourcePath);

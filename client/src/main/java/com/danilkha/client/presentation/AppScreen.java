@@ -8,5 +8,5 @@ public sealed interface AppScreen permits AppScreen.Menu, AppScreen.NameInput, A
             LobbyDto lobby
     ) implements AppScreen{ }
 
-    record LobbyRoom(LobbyDto lobbyDto) implements AppScreen{}
+    record LobbyRoom(LobbyDto lobbyDto, String playerName) implements AppScreen{}
 }

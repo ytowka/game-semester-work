@@ -19,6 +19,6 @@
             </Button>
          </children>
       </HBox>
-      <ListView />
+      <ListView fx:id="players"/>
    </children>
 </VBox>

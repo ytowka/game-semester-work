@@ -45,6 +45,24 @@ public class Game {
         return false;
     }
 
+    public boolean disconnect(int playerId){
+        Player player = players.get(playerId);
+        boolean shouldDeleteLobby = false;
+        if(player != null){
+            Lobby lobby = player.getConnectedLobby();
+            if(lobby != null){
+                shouldDeleteLobby = lobby.leavePlayer(playerId);
+                if(shouldDeleteLobby){
+                    lobbies.remove(lobby.getName());
+                    listObservableValue.getValue().remove(lobby);
+                    listObservableValue.invalidate();
+                }
+            }
+            players.remove(playerId);
+        }
+        return shouldDeleteLobby;
+    }
+
     public Map<Integer, Player> getPlayers() {
         return players;
     }

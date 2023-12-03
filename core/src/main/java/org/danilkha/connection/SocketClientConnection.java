@@ -1,10 +1,15 @@
 package org.danilkha.connection;
 
+import org.danilkha.utils.observable.ObservableValue;
+import org.danilkha.utils.observable.Observer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class SocketClientConnection implements PackageReceiver {
@@ -22,6 +27,8 @@ public class SocketClientConnection implements PackageReceiver {
 
     private DisconnectListener disconnectListener = e -> {};
 
+    private final List<DisposableObserver<?>> disposableObservers;
+
     public SocketClientConnection(Socket socket, PackageReceiver packageReceiver) throws IOException {
         this.socket = socket;
 
@@ -31,6 +38,7 @@ public class SocketClientConnection implements PackageReceiver {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.packageReceiver = packageReceiver;
         messageQueue = new ArrayBlockingQueue<>(10);
+        disposableObservers = new ArrayList<>();
     }
 
     private void runReceiver(){
@@ -39,7 +47,7 @@ public class SocketClientConnection implements PackageReceiver {
                 String data = reader.readLine();
                 packageReceiver.receiveData(data);
             } catch (IOException e) {
-                disconnectListener.onDisconnect(e);
+                onDisconnect(e);
                 break;
             }
         }
@@ -51,7 +59,7 @@ public class SocketClientConnection implements PackageReceiver {
                 String data = messageQueue.take();
                 writer.println(data);
             } catch (InterruptedException e) {
-                disconnectListener.onDisconnect(e);
+                onDisconnect(e);
                 break;
             }finally {
                 writer.flush();
@@ -64,6 +72,12 @@ public class SocketClientConnection implements PackageReceiver {
         emitterThread.start();
     }
 
+    private void onDisconnect(Exception e){
+        disposableObservers.forEach(DisposableObserver::dispose);
+        disposableObservers.clear();
+        disconnectListener.onDisconnect(e);
+    }
+
     @Override
     public void receiveData(String data) {
         messageQueue.add(data);
@@ -71,5 +85,9 @@ public class SocketClientConnection implements PackageReceiver {
 
     public void setDisconnectListener(DisconnectListener disconnectListener){
         this.disconnectListener = disconnectListener;
+    }
+
+    public <T> void disposeOnDisconnect(ObservableValue<T> observableValue, Observer<T> observer){
+        disposableObservers.add(new DisposableObserver<>(observableValue, observer));
     }
 }
