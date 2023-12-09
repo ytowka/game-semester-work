@@ -90,4 +90,14 @@ public class SocketClientConnection implements PackageReceiver {
     public <T> void disposeOnDisconnect(ObservableValue<T> observableValue, Observer<T> observer){
         disposableObservers.add(new DisposableObserver<>(observableValue, observer));
     }
+
+    public void stop() {
+        try {
+            socket.shutdownInput();
+            socket.shutdownOutput();
+            socket.close();
+        } catch (IOException e) {
+            onDisconnect(e);
+        }
+    }
 }

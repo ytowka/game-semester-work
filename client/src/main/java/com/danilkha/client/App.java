@@ -41,6 +41,13 @@ public class App extends Application implements Navigator<AppScreen> {
         serviceLocator.socketClientConnection.get().start();
     }
 
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        serviceLocator.socketClientConnection.get().stop();
+        System.out.println("stop");
+    }
+
     public static void main(String[] args) {
         launch();
     }

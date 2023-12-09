@@ -63,7 +63,20 @@ public class GameController extends RouterController {
 
         addHandler(LobbyApi.LOBBY_PLAYERS, request -> {
             System.out.println("subscribe player");
-
+            Player player = game.getPlayerByClientId(request.clientId());
+            if(player != null && player.getConnectedLobby() != null){
+                server.disposeOnDisconnect(request.clientId(), player.getConnectedLobby().getObservableMembers(), members ->{
+                    server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
+                            Response.Type.EMIT,
+                            request.path(),
+                            members.stream().map(Player::getName).toArray(String[]::new)
+                    )));
+                });
+            }
         });
+
+        server.addClientDisconnectLister(((clientId, e) -> {
+            game.disconnect(clientId);
+        }));
     }
 }

@@ -24,12 +24,16 @@ public class LobbyController {
         this.model = model;
         startGameButton.setVisible(model.isHost());
 
-        players.setItems(FXCollections.observableList(mapPlayers(model.lobbyDto)));
+        model.players.addObserver(playerList -> {
+            if(playerList != null){
+                players.setItems(FXCollections.observableList(mapPlayers(playerList, model.lobbyDto.hostName())));
+            }
+        });
     }
 
-    private static List<String> mapPlayers(LobbyDto lobbyDto){
-        return Arrays.stream(lobbyDto.playerNames()).map(name -> {
-            if(name.equals(lobbyDto.hostName())){
+    private static List<String> mapPlayers(String[] playerNames, String host){
+        return Arrays.stream(playerNames).map(name -> {
+            if(name.equals(host)){
                 return name+" (host)";
             }else return name;
         }).toList();
