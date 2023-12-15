@@ -31,25 +31,6 @@ public class LobbyApiImpl extends Api implements LobbyApi{
     }
 
     @Override
-    public Completable<List<LobbyDto>> getAllLobbies() {
-            Completable<List<LobbyDto>> lobbies = new Completable<>();
-         get(SUBSCRIBE_LOBBIES, new Call<>() {
-            @Override
-            public void onSuccess(String[] data) {
-                lobbies.complete(Arrays.stream(data[0].split(","))
-                        .map(LobbyDto::fromString).toList());
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                t.printStackTrace();
-                lobbies.complete(null);
-            }
-        });
-         return lobbies;
-    }
-
-    @Override
     public Completable<Boolean> createNewLobby(String playerName) {
         return post(CREATE_NEW_LOBBY, playerName);
     }
@@ -68,5 +49,10 @@ public class LobbyApiImpl extends Api implements LobbyApi{
     @Override
     public Completable<Boolean> startGame() {
         return post(START_GAME);
+    }
+
+    @Override
+    public ObservableValue<String[]> awaitGameStart() {
+        return subscribe(AWAIT_GAME_START);
     }
 }

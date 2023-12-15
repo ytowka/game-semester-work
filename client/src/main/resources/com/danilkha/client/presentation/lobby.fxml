@@ -12,7 +12,7 @@
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Label text="Игроки" />
-            <Button fx:id="startGameButton" mnemonicParsing="false" text="начать игру" textAlignment="CENTER">
+            <Button fx:id="startGameButton" onAction="#onStartGame" mnemonicParsing="false" text="начать игру" textAlignment="CENTER">
                <HBox.margin>
                   <Insets left="20.0" />
                </HBox.margin>

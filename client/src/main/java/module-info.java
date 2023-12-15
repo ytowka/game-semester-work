@@ -15,4 +15,7 @@ module com.danilkha.client {
 
     exports com.danilkha.client.presentation.lobby;
     opens com.danilkha.client.presentation.lobby to javafx.fxml;
+
+    exports com.danilkha.client.presentation.game;
+    opens com.danilkha.client.presentation.game to javafx.fxml;
 }

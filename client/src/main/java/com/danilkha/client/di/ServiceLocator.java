@@ -1,7 +1,9 @@
 package com.danilkha.client.di;
 
+import com.danilkha.client.api.GameApiImpl;
 import com.danilkha.client.api.LobbyApiImpl;
 import com.danilkha.client.api.MultiPackageReceiver;
+import org.danilkha.api.GameRoundApi;
 import org.danilkha.api.LobbyApi;
 import org.danilkha.config.ServerConfig;
 import org.danilkha.connection.SocketClientConnection;
@@ -48,6 +50,12 @@ public class ServiceLocator {
         LobbyApiImpl lobbyApi1 = new LobbyApiImpl(socketClientConnection.get());
         globalPackageReceiver.get().addReceiver(lobbyApi1);
         return lobbyApi1;
+    });
+
+    public Lazy<GameRoundApi> gameApi = new Lazy<>(() -> {
+        GameApiImpl gameApi1 = new GameApiImpl(socketClientConnection.get());
+        globalPackageReceiver.get().addReceiver(gameApi1);
+        return gameApi1;
     });
 
 }

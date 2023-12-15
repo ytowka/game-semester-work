@@ -15,12 +15,13 @@ public interface LobbyApi {
     String LOBBY_PLAYERS = "lobby/players";
     String LEAVE_LOBBY = "lobby/leave";
     String START_GAME = "lobby/start";
+    String AWAIT_GAME_START = "lobby/game_start";
 
     ObservableValue<List<LobbyDto>> subscribeActiveLobbies();
     ObservableValue<String[]> subscribeLobbyPlayers();
-    Completable<List<LobbyDto>> getAllLobbies();
     Completable<Boolean> createNewLobby(String playerName);
     Completable<Boolean> connectToLobby(String name, String playerName);
     Completable<Boolean> leaveLobby();
     Completable<Boolean> startGame();
+    ObservableValue<String[]> awaitGameStart();
 }

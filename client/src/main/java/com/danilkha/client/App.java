@@ -3,6 +3,7 @@ package com.danilkha.client;
 import com.danilkha.client.di.ServiceLocator;
 import com.danilkha.client.presentation.AppScreen;
 import com.danilkha.client.presentation.Navigator;
+import com.danilkha.client.presentation.game.GameModel;
 import com.danilkha.client.presentation.lobby.LobbyModel;
 import com.danilkha.client.presentation.menu.MenuModel;
 import com.danilkha.client.presentation.name.NameModel;
@@ -10,6 +11,7 @@ import com.danilkha.client.utils.BaseScreen;
 import com.danilkha.client.utils.LiveData;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import org.danilkha.api.GameRoundApi;
 import org.danilkha.api.LobbyApi;
 import org.danilkha.game.LobbyDto;
 import org.danilkha.utils.observable.EqualityPolicy;
@@ -20,10 +22,10 @@ public class App extends Application implements Navigator<AppScreen> {
     ServiceLocator serviceLocator = ServiceLocator.getInstance();
     LobbyApi lobbyApi = serviceLocator.lobbyApi.get();
 
+
     @Override
     public void start(Stage stage) {
         stage.setTitle("Tanchiki");
-
 
         currentScreen.addObserver(value ->{
             if(value != null){
@@ -33,10 +35,11 @@ public class App extends Application implements Navigator<AppScreen> {
                     stage.setScene(new NameModel(lobbyApi, nameInputScreen.lobby(), this).scene);
                 } else if (value instanceof AppScreen.LobbyRoom lobbyRoom) {
                     stage.setScene(new LobbyModel(lobbyApi, lobbyRoom.lobbyDto(), lobbyRoom.playerName(), this).scene);
+                } else if(value instanceof AppScreen.Game){
+                    stage.setScene(new GameModel(serviceLocator.gameApi.get()).scene);
                 }
             }
         });
-
         stage.show();
         serviceLocator.socketClientConnection.get().start();
     }

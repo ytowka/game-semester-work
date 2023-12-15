@@ -1,12 +1,14 @@
 package org.danilkha.middleware;
 
 import org.danilkha.api.LobbyApi;
+import org.danilkha.connection.ClientRequest;
 import org.danilkha.connection.Response;
 import org.danilkha.connection.Server;
 import org.danilkha.game.Game;
 import org.danilkha.game.LobbyDto;
 import org.danilkha.game.Player;
 import org.danilkha.protocol.Protocol;
+import org.danilkha.utils.observable.ObservableValue;
 
 public class GameController extends RouterController {
 
@@ -71,6 +73,22 @@ public class GameController extends RouterController {
                             request.path(),
                             members.stream().map(Player::getName).toArray(String[]::new)
                     )));
+                });
+            }
+        });
+
+        addHandler(LobbyApi.AWAIT_GAME_START, request -> {
+            System.out.println("await game start");
+            Player player = game.getPlayerByClientId(request.clientId());
+            if(player != null && player.getConnectedLobby() != null){
+                server.disposeOnDisconnect(request.clientId(), player.getConnectedLobby().isStarted(), isStarted ->{
+                    if(isStarted){
+                        server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
+                                Response.Type.EMIT,
+                                request.path(),
+                                new String[]{"true"}
+                        )));
+                    }
                 });
             }
         });
