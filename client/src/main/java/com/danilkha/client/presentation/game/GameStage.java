@@ -57,7 +57,6 @@ public class GameStage extends Pane{
             public void handle(long now) {
                 int delta = (int)(now/1000L - lastUpdate);
                 lastUpdate = now/1000L;
-                System.out.println(now / 1_000_000L);
                 doActors(delta);
             }
         };
