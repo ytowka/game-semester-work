@@ -5,7 +5,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GameStage extends Pane{
 
@@ -19,7 +21,7 @@ public class GameStage extends Pane{
     private final float gameWidth;
     private final float gameHeight;
 
-    private final List<Integer> pressedKeys;
+    public final Set<Integer> pressedKeys;
 
     public final InputListener inputListener = new InputListener() {
         @Override
@@ -60,7 +62,7 @@ public class GameStage extends Pane{
                 doActors(delta);
             }
         };
-        pressedKeys = new ArrayList<>();
+        pressedKeys = new HashSet<>();
     }
 
     private void doActors(int delta){
@@ -72,12 +74,12 @@ public class GameStage extends Pane{
     public void addActor(Actor actor){
         actors.add(actor);
         actor.setGameStage(this);
-        getChildren().add(actor.getNode());
+        getChildren().add(actor.getImage());
     }
 
     public void removeActor(Actor actor){
         actors.remove(actor);
-        getChildren().remove(actor.getNode());
+        getChildren().remove(actor.getImage());
     }
 
     public void start(){

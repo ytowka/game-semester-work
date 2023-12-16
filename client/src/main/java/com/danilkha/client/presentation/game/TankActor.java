@@ -4,6 +4,8 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.util.Arrays;
+
 public class TankActor extends Actor{
 
     private final int playerIndex;
@@ -35,19 +37,10 @@ public class TankActor extends Actor{
             speed = 0;
         }
 
-        float centerX = (float) node.getX() + getWidth()/2;
-        float centerY = (float) node.getY() + getHeight()/2;
 
-        GameModel.debugInfo.setText("x = %s \ny = %s\nmouseX = %s\nmouesY = %s\nspeed = %s".formatted(
-                centerX,
-                centerY,
-                getGameStage().getMouseX(),
-                getGameStage().getMouseY(),
-                speed
-        ));
 
-        float vectorX = getGameStage().getMouseX() -  centerX;
-        float vectorY = getGameStage().getMouseY() - centerY;
+        float vectorX = getGameStage().getMouseX() - getCenterX();
+        float vectorY = getGameStage().getMouseY() - getCenterY();
 
 
         var len = (float) Math.sqrt(vectorX*vectorX + vectorY*vectorY);
@@ -66,12 +59,20 @@ public class TankActor extends Actor{
         node.setX(node.getX() + deltaX);
         node.setY(node.getY() + deltaY);
 
-        System.out.println("angle: "+angle);
+
+        GameModel.debugInfo.setText("x = %s \ny = %s\nmouseX = %s\nmouesY = %s\nkeys = %s\nangle=%s".formatted(
+                getCenterX(),
+                getCenterY(),
+                getGameStage().getMouseX(),
+                getGameStage().getMouseY(),
+                Arrays.toString(getGameStage().pressedKeys.toArray()),
+                angle
+        ));
         node.setRotate(Math.toDegrees(angle)+90);
     }
 
     @Override
-    Node getNode() {
+    ImageView getImage() {
         return node;
     }
 

@@ -1,6 +1,7 @@
 package com.danilkha.client.presentation.game;
 
 import javafx.scene.Node;
+import javafx.scene.image.ImageView;
 
 public abstract class Actor {
 
@@ -23,16 +24,16 @@ public abstract class Actor {
     }
 
     public float getCenterX(){
-        return (float) getNode().getLayoutX() + width/2f;
+        return (float) getImage().getX() + width/2f;
     }
 
     public float getCenterY(){
-        return (float) getNode().getLayoutY() + height/2f;
+        return (float) getImage().getY() + height/2f;
     }
 
     abstract void onAct(int delta);
 
-    abstract Node getNode();
+    abstract ImageView getImage();
 
     public float getWidth() {
         return width;
