@@ -44,8 +44,7 @@ public class SocketClientConnection implements PackageReceiver {
     }
 
     private void runReceiver(){
-        while (socket.isConnected()){
-            System.out.println("running receiver");
+        while (socket.isClosed()){
 
             try {
                 String data = reader.readLine();
@@ -55,12 +54,10 @@ public class SocketClientConnection implements PackageReceiver {
                 break;
             }
         }
-        System.out.println("stopping receiver");
     }
 
     private void runEmitter(){
-        while (socket.isConnected()){
-            System.out.println("running emitter");
+        while (!socket.isClosed()){
             try {
                 String data = messageQueue.take();
                 writer.println(data);
@@ -71,7 +68,6 @@ public class SocketClientConnection implements PackageReceiver {
                 writer.flush();
             }
         }
-        System.out.println("stopping emitter");
     }
 
     public void start(){
@@ -100,7 +96,7 @@ public class SocketClientConnection implements PackageReceiver {
 
     public void stop() {
         try {
-            messageQueue.clear();
+            messageQueue.add("");
             socket.shutdownInput();
             socket.shutdownOutput();
             socket.close();
