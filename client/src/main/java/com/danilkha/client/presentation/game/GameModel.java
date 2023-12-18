@@ -1,15 +1,16 @@
 package com.danilkha.client.presentation.game;
 
-import com.danilkha.client.utils.BaseScreen;
-import javafx.geometry.Pos;
+import com.danilkha.client.presentation.game.tank.ControllerTankActor;
+import com.danilkha.client.presentation.game.tank.RemoteTankActor;
+import com.danilkha.client.presentation.game.tank.TankActor;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import org.danilkha.api.GameEvent;
 import org.danilkha.api.GameRoundApi;
 import org.danilkha.config.GameConfig;
+
+import java.util.Arrays;
 
 public class GameModel{
 
@@ -18,11 +19,13 @@ public class GameModel{
 
     public static Label debugInfo;
 
-    public GameModel(GameRoundApi gameRoundApi) {
+    private final GameStage gameStage;
+
+    public GameModel(GameRoundApi gameRoundApi, String[] playerName, String me) {
         this.gameRoundApi = gameRoundApi;
 
 
-        GameStage gameStage = new GameStage(GameConfig.MAP_SIZE, GameConfig.MAP_SIZE);
+        gameStage = new GameStage(GameConfig.MAP_SIZE, GameConfig.MAP_SIZE);
 
         gameStage.maxHeight(900);
         gameStage.maxWidth(900);
@@ -33,7 +36,15 @@ public class GameModel{
 
         debugInfo = new Label();
 
-        gameStage.addActor(new TankActor(0, 50, 50));
+        System.out.println(Arrays.toString(playerName));
+        for (int i = 0; i < playerName.length; i++) {
+            String s = playerName[i];
+            if (s.equals(me)) {
+                gameStage.addActor(new ControllerTankActor(i, 50, 50));
+            } else {
+                gameStage.addActor(new RemoteTankActor(i, 50, 50));
+            }
+        }
 
         BorderPane root = new BorderPane(gameStage);
 
@@ -61,6 +72,27 @@ public class GameModel{
             gameStage.inputListener.onMouseClicked((float) event.getX(), (float) event.getY());
         });
 
+        gameRoundApi.subscribeGameEvents().addObserver(value -> {
+            for (GameEvent gameEvent : value) {
+                if(gameEvent instanceof GameEvent.PlayerMove playerMove){
+                    gameStage.moveTank(playerMove.playerIndex(), playerMove.x(), playerMove.y(), playerMove.angle());
+                }
+            }
+        });
+
+        gameStage.getPlayerMove().addObserver(vector -> {
+            sendPlayerMove(vector[0], vector[1], vector[2]);
+        });
+
+
         gameStage.start();
+    }
+
+    protected void sendPlayerMove(float x, float y, float angle){
+        gameRoundApi.moveTo(x, y, angle);
+    }
+
+    protected void shoot(float x, float y, float angle){
+
     }
 }

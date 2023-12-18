@@ -38,7 +38,10 @@ public class LobbyModel extends BaseScreen<LobbyController> {
             System.out.println(Arrays.toString(s));
             if(s != null && s.length > 0){
                 Platform.runLater(() -> {
-                    navigator.navigate(new AppScreen.Game());
+                    navigator.navigate(new AppScreen.Game(
+                            players.getValue(),
+                            playerName
+                    ));
                 });
             }
         });

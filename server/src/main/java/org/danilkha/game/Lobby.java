@@ -1,5 +1,8 @@
 package org.danilkha.game;
 
+import org.danilkha.config.GameConfig;
+import org.danilkha.config.ServerConfig;
+import org.danilkha.game.round.PlayerInfo;
 import org.danilkha.game.round.Round;
 import org.danilkha.utils.observable.EqualityPolicy;
 import org.danilkha.utils.observable.MutableObservableValue;
@@ -20,7 +23,20 @@ public class Lobby{
 
     private final MutableObservableValue<Boolean> isGameStarted;
 
-    private Round currentRound = null;
+    public MutableObservableValue<Round> currentRound = new MutableObservableValue<>(EqualityPolicy.NEVER);
+
+    private Thread eventLoop = new Thread(() -> {
+        while (true){
+            try {
+                Thread.sleep(1000/ServerConfig.TICK_RATE);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            currentRound.invalidate();
+            currentRound.getValue().resetSingleEvents();
+        }
+    });
 
 
     public Lobby(String name, Player host) {
@@ -38,7 +54,14 @@ public class Lobby{
 
     public boolean startGame() {
         if(members.size() > 1){
+            List<PlayerInfo> playerInfos = new ArrayList<>();
+            for (int i = 0; i < members.size(); i++) {
+                Player member = members.get(i);
+                playerInfos.add(new PlayerInfo(i, member));
+            }
+            currentRound.setValue(new Round(playerInfos));
             isGameStarted.setValue(true);
+            eventLoop.start();
             return true;
         }
         return false;
@@ -64,6 +87,7 @@ public class Lobby{
 
     public boolean leavePlayer(int userId){
         if(userId ==  hostUserId){
+            eventLoop.interrupt();
             return true;
         }else{
             Player player = null;
@@ -82,7 +106,7 @@ public class Lobby{
     }
 
     public Round getCurrentRound(){
-        return currentRound;
+        return currentRound.getValue();
     }
 
     public LobbyDto toDto(){

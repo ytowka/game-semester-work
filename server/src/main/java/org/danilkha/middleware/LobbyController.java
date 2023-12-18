@@ -1,21 +1,30 @@
 package org.danilkha.middleware;
 
+import org.danilkha.api.GameEvent;
+import org.danilkha.api.GameRoundApi;
 import org.danilkha.api.LobbyApi;
-import org.danilkha.connection.ClientRequest;
 import org.danilkha.connection.Response;
 import org.danilkha.connection.Server;
 import org.danilkha.game.Game;
-import org.danilkha.game.LobbyDto;
+import org.danilkha.game.Lobby;
 import org.danilkha.game.Player;
 import org.danilkha.protocol.Protocol;
-import org.danilkha.utils.observable.ObservableValue;
+import org.danilkha.utils.coding.EncodingUtil;
 
-public class GameController extends RouterController {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.lang.Float.intBitsToFloat;
+
+public class LobbyController extends RouterController {
 
     private final Game game;
     private final Server server;
 
-    public GameController(Game game, Server server) {
+    public LobbyController(Game game, Server server) {
         super(server);
         this.game = game;
         this.server = server;
@@ -55,11 +64,14 @@ public class GameController extends RouterController {
         addHandler(LobbyApi.SUBSCRIBE_LOBBIES, request -> {
             System.out.println("subscribe lobbies");
             server.disposeOnDisconnect(request.clientId(), game.subscribeLobbies(), lobbies -> {
-                server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
-                        Response.Type.EMIT,
-                        request.path(),
-                        lobbies.stream().map(lobby -> lobby.toDto().serialize()).toArray(String[]::new)
-                )));
+                Player player = game.getPlayerByClientId(request.clientId());
+                if(player == null){
+                    server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
+                            Response.Type.EMIT,
+                            request.path(),
+                            lobbies.stream().map(lobby -> lobby.toDto().serialize()).toArray(String[]::new)
+                    )));
+                }
             });
         });
 
@@ -91,6 +103,46 @@ public class GameController extends RouterController {
                     }
                 });
             }
+        });
+
+        addHandler(GameRoundApi.SUBSCRIBE_GAME_EVENTS, request -> {
+            Lobby lobby = game.getPlayerByClientId(request.clientId()).getConnectedLobby();
+
+            lobby.currentRound.addObserver(round -> {
+                List<GameEvent> gameEvents = new ArrayList<>(round.getSingleEvents());
+                round.getPlayers().forEach((id, playerInfo) -> {
+                    if(id != request.clientId()){
+                        gameEvents.add(new GameEvent.PlayerMove(playerInfo.getIndex(), playerInfo.getX(), playerInfo.getY(), playerInfo.getAngle()));
+                    }
+                });
+
+
+                System.out.println(Arrays.toString(gameEvents
+                        .stream()
+                        .map(GameEvent::serialize)
+                        .toArray()));
+
+                String[] data = new String[gameEvents.size()];
+                for (int i = 0; i < gameEvents.size(); i++) {
+                    data[i] = gameEvents.get(i).serialize();
+                }
+
+
+                server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
+                        Response.Type.EMIT,
+                        request.path(),
+                        data
+                )));
+            });
+        });
+
+        addHandler(GameRoundApi.MOVE_TO, request -> {
+            Player player = game.getPlayerByClientId(request.clientId());
+            Lobby lobby = player.getConnectedLobby();
+            List<Float> data = Arrays.stream(EncodingUtil.decodeStringToIntArray(request.data()[0]))
+                    .mapToObj(Float::intBitsToFloat)
+                    .toList();
+            lobby.currentRound.getValue().moveTo(request.clientId(), data.get(0), data.get(1), data.get(2));
         });
 
         server.addClientDisconnectLister(((clientId, e) -> {

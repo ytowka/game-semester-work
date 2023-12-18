@@ -31,9 +31,9 @@ public abstract class Actor {
         return (float) getImage().getY() + height/2f;
     }
 
-    abstract void onAct(int delta);
+    public abstract void onAct(int delta);
 
-    abstract ImageView getImage();
+    public abstract ImageView getImage();
 
     public float getWidth() {
         return width;

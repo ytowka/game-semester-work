@@ -5,7 +5,6 @@ import org.danilkha.utils.observable.ObservableValue;
 
 public interface GameRoundApi {
 
-    String GENERATE_MAP = "game/map";
 
     String MOVE_TO = "game/move";
     String SHOOT = "game/shoot";
@@ -15,10 +14,9 @@ public interface GameRoundApi {
     String SUBSCRIBE_GAME_EVENTS = "game/events";
     String SUBSCRIBE_ROUND = "game/round";
 
-    void moveTo(float x, float y);
+    void moveTo(float x, float y, float angle);
     void shoot(float directionAngle);
     void hitWall(int id);
     void hitPlayer(int id);
-    ObservableValue<String> subscribeGameEvents();
-    ObservableValue<Boolean> subscribeRoundRestart();
+    ObservableValue<GameEvent[]> subscribeGameEvents();
 }

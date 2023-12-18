@@ -62,7 +62,7 @@ public class MutableObservableValue<T> implements ObservableValue<T> {
 
     @Override
     public void addObserver(Observer<T> observer){
-        observer.onChange(value);
+        if(value != null) observer.onChange(value);
         observers.add(observer);
     }
 

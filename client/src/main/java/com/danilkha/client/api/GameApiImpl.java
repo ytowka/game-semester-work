@@ -1,8 +1,12 @@
 package com.danilkha.client.api;
 
+import org.danilkha.api.GameEvent;
 import org.danilkha.api.GameRoundApi;
 import org.danilkha.connection.PackageReceiver;
+import org.danilkha.utils.coding.EncodingUtil;
 import org.danilkha.utils.observable.ObservableValue;
+
+import java.util.Arrays;
 
 public class GameApiImpl extends Api implements GameRoundApi {
     public GameApiImpl(PackageReceiver server) {
@@ -10,8 +14,12 @@ public class GameApiImpl extends Api implements GameRoundApi {
     }
 
     @Override
-    public void moveTo(float x, float y) {
-
+    public void moveTo(float x, float y, float angle) {
+        drop(MOVE_TO, EncodingUtil.encodeIntArrayToString(new int[]{
+                Float.floatToRawIntBits(x),
+                Float.floatToRawIntBits(y),
+                Float.floatToRawIntBits(angle),
+        }));
     }
 
     @Override
@@ -30,12 +38,14 @@ public class GameApiImpl extends Api implements GameRoundApi {
     }
 
     @Override
-    public ObservableValue<String> subscribeGameEvents() {
-        return null;
+    public ObservableValue<GameEvent[]> subscribeGameEvents() {
+        return subscribe(SUBSCRIBE_GAME_EVENTS).map(raw -> {
+            GameEvent[] gameEvents = new GameEvent[raw.length];
+            for (int i = 0; i < gameEvents.length; i++) {
+                gameEvents[i] = GameEvent.deserialize(raw[i]);
+            }
+            return gameEvents;
+        });
     }
 
-    @Override
-    public ObservableValue<Boolean> subscribeRoundRestart() {
-        return null;
-    }
 }

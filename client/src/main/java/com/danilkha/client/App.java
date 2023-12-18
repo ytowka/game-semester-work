@@ -35,8 +35,12 @@ public class App extends Application implements Navigator<AppScreen> {
                     stage.setScene(new NameModel(lobbyApi, nameInputScreen.lobby(), this).scene);
                 } else if (value instanceof AppScreen.LobbyRoom lobbyRoom) {
                     stage.setScene(new LobbyModel(lobbyApi, lobbyRoom.lobbyDto(), lobbyRoom.playerName(), this).scene);
-                } else if(value instanceof AppScreen.Game){
-                    stage.setScene(new GameModel(serviceLocator.gameApi.get()).scene);
+                } else if(value instanceof AppScreen.Game game){
+                    stage.setScene(new GameModel(
+                            serviceLocator.gameApi.get(),
+                            game.playerName(),
+                            game.me()
+                    ).scene);
                 }
             }
         });

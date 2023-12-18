@@ -6,5 +6,6 @@ module core {
     exports org.danilkha.utils.lazy;
     exports org.danilkha.protocol;
     exports org.danilkha.game;
+    exports org.danilkha.utils.coding;
 
 }

@@ -10,5 +10,8 @@ public sealed interface AppScreen permits AppScreen.Game, AppScreen.LobbyRoom, A
 
     record LobbyRoom(LobbyDto lobbyDto, String playerName) implements AppScreen{}
 
-    final class Game implements AppScreen{}
+    final record Game(
+            String[] playerName,
+            String me
+    ) implements AppScreen{}
 }

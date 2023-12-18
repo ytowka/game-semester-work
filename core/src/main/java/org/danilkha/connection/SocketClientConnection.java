@@ -1,5 +1,7 @@
 package org.danilkha.connection;
 
+import org.danilkha.protocol.Protocol;
+import org.danilkha.utils.coding.SbUtil;
 import org.danilkha.utils.observable.ObservableValue;
 import org.danilkha.utils.observable.Observer;
 
@@ -44,12 +46,14 @@ public class SocketClientConnection implements PackageReceiver {
     }
 
     private void runReceiver(){
-        while (socket.isClosed()){
-
+        while (!socket.isClosed()){
+            System.out.println("runReceiver");
             try {
                 String data = reader.readLine();
                 packageReceiver.receiveData(data);
             } catch (Exception e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
                 onDisconnect(e);
                 break;
             }
@@ -62,6 +66,7 @@ public class SocketClientConnection implements PackageReceiver {
                 String data = messageQueue.take();
                 writer.println(data);
             } catch (InterruptedException e) {
+                e.printStackTrace();
                 onDisconnect(e);
                 break;
             }finally {

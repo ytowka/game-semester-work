@@ -13,6 +13,7 @@ public record LobbyDto(
         return new LobbyDto(name, players);
     }
 
+    // {danil&[}
     public String serialize(){
         StringBuilder sb = new StringBuilder();
         sb.append("{");
