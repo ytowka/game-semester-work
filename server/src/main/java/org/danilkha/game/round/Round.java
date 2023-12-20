@@ -29,7 +29,12 @@ public class Round {
     }
 
     public void shoot(int clientId, float x, float y, float directionAngle) {
-
+        singleEvents.add(new GameEvent.Shoot(
+                players.get(clientId).getIndex(),
+                x,
+                y,
+                directionAngle
+        ));
     }
 
     public void hit(int fromId, int toId) {

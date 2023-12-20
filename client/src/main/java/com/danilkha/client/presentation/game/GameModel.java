@@ -1,8 +1,8 @@
 package com.danilkha.client.presentation.game;
 
-import com.danilkha.client.presentation.game.tank.ControllerTankActor;
-import com.danilkha.client.presentation.game.tank.RemoteTankActor;
-import com.danilkha.client.presentation.game.tank.TankActor;
+import com.danilkha.client.presentation.game.tank.ControllerTankSprite;
+import com.danilkha.client.presentation.game.tank.RemoteTankSprite;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -10,9 +10,11 @@ import org.danilkha.api.GameEvent;
 import org.danilkha.api.GameRoundApi;
 import org.danilkha.config.GameConfig;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public class GameModel{
+public class GameModel implements GameCallback{
 
     public final Scene scene;
     private final GameRoundApi gameRoundApi;
@@ -21,30 +23,35 @@ public class GameModel{
 
     private final GameStage gameStage;
 
+    public static final int WINDOW_SIZE = 900;
+
     public GameModel(GameRoundApi gameRoundApi, String[] playerName, String me) {
         this.gameRoundApi = gameRoundApi;
 
 
-        gameStage = new GameStage(GameConfig.MAP_SIZE, GameConfig.MAP_SIZE);
-
-        gameStage.maxHeight(900);
-        gameStage.maxWidth(900);
-        gameStage.minHeight(900);
-        gameStage.minWidth(900);
-        gameStage.setPrefWidth(900);
-        gameStage.setPrefHeight(900);
-
-        debugInfo = new Label();
-
+        ControllerTankSprite controllerTankSprite = null;
+        List<RemoteTankSprite> remoteTankSprites = new ArrayList<>();
         System.out.println(Arrays.toString(playerName));
         for (int i = 0; i < playerName.length; i++) {
             String s = playerName[i];
             if (s.equals(me)) {
-                gameStage.addActor(new ControllerTankActor(i, 50, 50));
+                controllerTankSprite = new ControllerTankSprite(i, 50, 50);
             } else {
-                gameStage.addActor(new RemoteTankActor(i, 50, 50));
+                remoteTankSprites.add(new RemoteTankSprite(i, 50, 50));
             }
         }
+
+        gameStage = new GameStage(controllerTankSprite, remoteTankSprites, GameConfig.MAP_SIZE, GameConfig.MAP_SIZE, this);
+
+        controllerTankSprite.setGameStage(gameStage);
+        for (RemoteTankSprite remoteTankSprite : remoteTankSprites) {
+            remoteTankSprite.setGameStage(gameStage);
+        }
+
+        gameStage.setPrefWidth(WINDOW_SIZE);
+        gameStage.setPrefHeight(WINDOW_SIZE);
+
+        debugInfo = new Label();
 
         BorderPane root = new BorderPane(gameStage);
 
@@ -73,11 +80,21 @@ public class GameModel{
         });
 
         gameRoundApi.subscribeGameEvents().addObserver(value -> {
-            for (GameEvent gameEvent : value) {
-                if(gameEvent instanceof GameEvent.PlayerMove playerMove){
-                    gameStage.moveTank(playerMove.playerIndex(), playerMove.x(), playerMove.y(), playerMove.angle());
+            Platform.runLater(() -> {
+                for (GameEvent gameEvent : value) {
+                    if(gameEvent instanceof GameEvent.PlayerMove playerMove){
+                        gameStage.moveTank(
+                                playerMove.playerIndex(),
+                                getActualSize(playerMove.x()),
+                                getActualSize(playerMove.y()),
+                                playerMove.angle()
+                        );
+                    }
+                    if(gameEvent instanceof GameEvent.Shoot shoot){
+                        gameStage.addMissile(shoot.x(), shoot.y(), shoot.angle());
+                    }
                 }
-            }
+            });
         });
 
         gameStage.getPlayerMove().addObserver(vector -> {
@@ -88,11 +105,33 @@ public class GameModel{
         gameStage.start();
     }
 
-    protected void sendPlayerMove(float x, float y, float angle){
-        gameRoundApi.moveTo(x, y, angle);
+
+    public static float getActualSize(float gameValue){
+        return gameValue * WINDOW_SIZE / GameConfig.MAP_SIZE;
     }
 
-    protected void shoot(float x, float y, float angle){
+    public static float getGameSize(float windowValue){
+        return windowValue / WINDOW_SIZE * GameConfig.MAP_SIZE;
+    }
+
+
+    protected void sendPlayerMove(float x, float y, float angle){
+        gameRoundApi.moveTo(getGameSize(x), getGameSize(y), angle);
+    }
+
+
+    @Override
+    public void shoot(float centerX, float centerY, double degAngle) {
+        gameRoundApi.shoot(centerX, centerY, (float) degAngle);
+    }
+
+    @Override
+    public void playerHit(int to) {
+        gameRoundApi.hitPlayer(to);
+    }
+
+    @Override
+    public void wallHit(int x, int y) {
 
     }
 }

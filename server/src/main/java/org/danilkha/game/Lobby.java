@@ -28,7 +28,7 @@ public class Lobby{
     private Thread eventLoop = new Thread(() -> {
         while (true){
             try {
-                Thread.sleep(1000/ServerConfig.TICK_RATE);
+                Thread.sleep(1000/ServerConfig.TICK_RATE); //AAAAAUP1No1DlR3LwVwQgw==
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

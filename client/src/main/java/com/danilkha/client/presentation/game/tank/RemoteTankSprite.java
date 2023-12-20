@@ -1,15 +1,11 @@
 package com.danilkha.client.presentation.game.tank;
 
-import com.danilkha.client.presentation.game.GameModel;
-
-import java.util.Arrays;
-
-public class RemoteTankActor extends TankActor{
+public class RemoteTankSprite extends TankSprite {
 
     private float[] lastState = new float[3];
     private float[] currentState = new float[3];
 
-    public RemoteTankActor(int playerIndex, float width, float height) {
+    public RemoteTankSprite(int playerIndex, float width, float height) {
         super(playerIndex, width, height);
     }
 
@@ -23,6 +19,6 @@ public class RemoteTankActor extends TankActor{
     public void setState(float x, float y, float angle){
         currentState[0] = x;
         currentState[1] = y;
-        currentState[2] = angle;
+        currentState[2] = angle+90;
     }
 }

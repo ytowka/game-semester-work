@@ -145,6 +145,16 @@ public class LobbyController extends RouterController {
             lobby.currentRound.getValue().moveTo(request.clientId(), data.get(0), data.get(1), data.get(2));
         });
 
+        addHandler(GameRoundApi.SHOOT, request -> {
+            Player player = game.getPlayerByClientId(request.clientId());
+            Lobby lobby = player.getConnectedLobby();
+            List<Float> data = Arrays.stream(EncodingUtil.decodeStringToIntArray(request.data()[0]))
+                    .mapToObj(Float::intBitsToFloat)
+                    .toList();
+            lobby.currentRound.getValue().shoot(request.clientId(), data.get(0), data.get(1), data.get(2));
+        });
+
+
         server.addClientDisconnectLister(((clientId, e) -> {
             game.disconnect(clientId);
         }));

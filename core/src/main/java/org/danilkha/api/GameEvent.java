@@ -49,7 +49,15 @@ public sealed interface GameEvent {
     )implements GameEvent{
         @Override
         public String serialize() {
-            return null;
+            int[] data = new int[]{
+                    playerIndex,
+                    Float.floatToRawIntBits(x),
+                    Float.floatToRawIntBits(y),
+                    Float.floatToRawIntBits(angle)
+            };
+            return "SHOOT&%s".formatted(
+                    EncodingUtil.encodeIntArrayToString(data)
+            );
         }
     }
 
@@ -59,7 +67,13 @@ public sealed interface GameEvent {
     )implements GameEvent{
         @Override
         public String serialize() {
-            return null;
+            int[] data = new int[]{
+                    from,
+                    to,
+            };
+            return "HITP&%s".formatted(
+                    EncodingUtil.encodeIntArrayToString(data)
+            );
         }
     }
 
@@ -68,7 +82,10 @@ public sealed interface GameEvent {
     )implements GameEvent{
         @Override
         public String serialize() {
-            return null;
+            int[] data = new int[]{ wallCode };
+            return "HITW&%s".formatted(
+                    EncodingUtil.encodeIntArrayToString(data)
+            );
         }
     }
 
@@ -91,6 +108,29 @@ public sealed interface GameEvent {
                     Float.intBitsToFloat(data[2]),
                     Float.intBitsToFloat(data[3])
             );
+        }
+        if(rawData.startsWith("SHOOT")){
+            String[] parts = rawData.split("&");
+            int[] data = EncodingUtil.decodeStringToIntArray(parts[1]);
+            return new Shoot(
+                    data[0],
+                    Float.intBitsToFloat(data[1]),
+                    Float.intBitsToFloat(data[2]),
+                    Float.intBitsToFloat(data[3])
+            );
+        }
+        if(rawData.startsWith("HITP")){
+            String[] parts = rawData.split("&");
+            int[] data = EncodingUtil.decodeStringToIntArray(parts[1]);
+            return new HitTank(
+                    data[0],
+                    data[1]
+            );
+        }
+        if(rawData.startsWith("HITW")){
+            String[] parts = rawData.split("&");
+            int[] data = EncodingUtil.decodeStringToIntArray(parts[1]);
+            return new HitWall(data[0]);
         }
         return null;
     }

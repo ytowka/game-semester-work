@@ -1,18 +1,23 @@
 package com.danilkha.client.presentation.game.tank;
 
 import com.danilkha.client.presentation.game.GameModel;
+import org.danilkha.config.GameConfig;
 
 import java.util.Arrays;
 
-public class ControllerTankActor extends TankActor{
-    public ControllerTankActor(int playerIndex, float width, float height) {
+public class ControllerTankSprite extends TankSprite {
+    public ControllerTankSprite(int playerIndex, float width, float height) {
         super(playerIndex, width, height);
     }
+
+    private double degAngle = 0f;
+
+    private int hp = GameConfig.PLAYER_HP;
 
     @Override
     public void onAct(int delta) {
         if(getGameStage().isKeyPressed(87)){
-            speed = 1f;
+            speed = GameConfig.TANK_MOVE_SPEED;
         }else {
             speed = 0;
         }
@@ -25,8 +30,8 @@ public class ControllerTankActor extends TankActor{
         var cos = vectorX/len;
         var sin = vectorY/len;
 
-        var deltaX = speed * cos * delta;
-        var deltaY = speed * sin * delta;
+        var deltaX = speed * cos * delta/1000f;
+        var deltaY = speed * sin * delta/1000f;
 
         var angle = Math.acos(cos);
 
@@ -37,7 +42,9 @@ public class ControllerTankActor extends TankActor{
         double x = node.getX() + deltaX;
         double y = node.getY() + deltaY;
 
-        var degAngle = Math.toDegrees(angle)+90;
+
+
+        degAngle = Math.toDegrees(angle);
         getGameStage().getPlayerMove().setValue(new float[]{
                 (float)x, (float)y, (float)degAngle
         });
@@ -54,6 +61,23 @@ public class ControllerTankActor extends TankActor{
                 Arrays.toString(getGameStage().pressedKeys.toArray()),
                 degAngle
         ));
-        node.setRotate(degAngle);
+        node.setRotate(degAngle+90);
+    }
+
+    public double getDegAngle() {
+        return degAngle;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public boolean hit(){
+        hp -=1;
+        return hp <= 0;
+    }
+
+    public boolean isDead(){
+        return hp <= 0;
     }
 }

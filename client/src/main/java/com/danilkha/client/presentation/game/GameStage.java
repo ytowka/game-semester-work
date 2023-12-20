@@ -1,13 +1,14 @@
 package com.danilkha.client.presentation.game;
 
-import com.danilkha.client.presentation.game.tank.RemoteTankActor;
-import com.danilkha.client.presentation.game.tank.TankActor;
+import com.danilkha.client.presentation.game.missle.Missile;
+import com.danilkha.client.presentation.game.tank.ControllerTankSprite;
+import com.danilkha.client.presentation.game.tank.RemoteTankSprite;
+import com.danilkha.client.presentation.game.tank.TankSprite;
 import javafx.animation.AnimationTimer;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
+import org.danilkha.config.GameConfig;
 import org.danilkha.utils.observable.EqualityPolicy;
 import org.danilkha.utils.observable.MutableObservableValue;
-import org.danilkha.utils.observable.ObservableValue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,9 +19,13 @@ public class GameStage extends Pane{
 
     private final AnimationTimer gameLoop;
 
-    public final List<Actor> actors;
 
-    public final List<TankActor> tankActors;
+
+    private final ControllerTankSprite controllerTankSprite;
+    private final List<RemoteTankSprite> remoteTanks;
+    private final List<Missile> missiles;
+
+    private final long lastShoot = 0;
 
     private float mouseX = 0f;
     private float mouseY = 0f;
@@ -41,7 +46,13 @@ public class GameStage extends Pane{
 
         @Override
         public void onMouseClicked(float x, float y) {
-
+            if(System.currentTimeMillis() - lastShoot > GameConfig.RELOAD_PERIOD){
+                shoot(
+                        controllerTankSprite.getCenterX(),
+                        controllerTankSprite.getCenterY(),
+                        controllerTankSprite.getDegAngle()
+                );
+            }
         }
 
         @Override
@@ -55,8 +66,30 @@ public class GameStage extends Pane{
         }
     };
 
-    public GameStage(float gameWidth, float gameHeight){
-        actors = new ArrayList<>();
+    private GameCallback gameCallback;
+
+    private void shoot(float centerX, float centerY, double degAngle) {
+        Missile missile = new Missile(
+                true,
+                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                centerX,
+                centerY,
+                (float) degAngle
+        );
+        getChildren().add(missile.getImage());
+        missiles.add(missile);
+        gameCallback.shoot(centerX, centerY, degAngle);
+    }
+
+    public GameStage(ControllerTankSprite controllerTankSprite, List<RemoteTankSprite> remoteTanks, float gameWidth, float gameHeight, GameCallback gameCallback){
+        this.controllerTankSprite = controllerTankSprite;
+        this.remoteTanks = remoteTanks;
+        getChildren().add(controllerTankSprite.getImage());
+        for (RemoteTankSprite remoteTank : remoteTanks) {
+            getChildren().add(remoteTank.getImage());
+        }
+        missiles = new ArrayList<>();
 
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
@@ -71,28 +104,35 @@ public class GameStage extends Pane{
             }
         };
         pressedKeys = new HashSet<>();
-        tankActors = new ArrayList<>();
+        this.gameCallback = gameCallback;
     }
 
-    private void doActors(int delta){
-        actors.forEach(actor -> {
-            actor.onAct(delta);
+    private synchronized void doActors(int delta){
+        controllerTankSprite.onAct(delta);
+        remoteTanks.forEach(sprite -> {
+            sprite.onAct(delta);
         });
-    }
-
-    public void addActor(Actor actor){
-        actors.add(actor);
-        if(actor instanceof TankActor tankActor){
-            tankActors.add(tankActor);
+        for (Missile missile : missiles) {
+            missile.onAct(delta);
+            if(missile.getCenterY() < -100
+                    || missile.getCenterX() > GameModel.WINDOW_SIZE + 100
+                    || missile.getCenterY() < -100
+                    ||missile.getCenterY() > GameModel.WINDOW_SIZE + 100
+            ){
+                missiles.remove(missile);
+            }else if(missile.isFromPlayer()){
+                for (RemoteTankSprite remoteTank : remoteTanks) {
+                    if(remoteTank.hits(missile.getCenterX(), missile.getCenterY())){
+                        gameCallback.playerHit(remoteTank.getPlayerIndex());
+                        missiles.remove(missile);
+                        break;
+                    }
+                }
+            }
         }
-        actor.setGameStage(this);
-        getChildren().add(actor.getImage());
     }
 
-    public void removeActor(Actor actor){
-        actors.remove(actor);
-        getChildren().remove(actor.getImage());
-    }
+
 
     public void start(){
         gameLoop.start();
@@ -111,9 +151,24 @@ public class GameStage extends Pane{
     }
 
     public void moveTank(int index, float x, float y, float angle){
-        if(tankActors.get(index) instanceof RemoteTankActor remoteTankActor){
-            remoteTankActor.setState(x, y, angle);
+        for (RemoteTankSprite remoteTank : remoteTanks) {
+            if(remoteTank.getPlayerIndex() == index){
+                remoteTank.setState(x, y, angle);
+            }
         }
+    }
+
+    public void addMissile(float x, float y, float angle){
+        Missile missile = new Missile(
+                false,
+                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                x,
+                y,
+                angle
+        );
+        getChildren().add(missile.getImage());
+        missiles.add(missile);
     }
 
     public MutableObservableValue<float[]> getPlayerMove() {

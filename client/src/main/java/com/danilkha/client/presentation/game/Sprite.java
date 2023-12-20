@@ -1,14 +1,13 @@
 package com.danilkha.client.presentation.game;
 
-import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 
-public abstract class Actor {
+public abstract class Sprite {
 
     private float width;
     private float height;
 
-    public Actor(float width, float height){
+    public Sprite(float width, float height){
         this.width = width;
         this.height = height;
     }
@@ -49,5 +48,9 @@ public abstract class Actor {
 
     public void setHeight(float height) {
         this.height = height;
+    }
+
+    public boolean hits(float x, float y){
+        return x > getImage().getX() && x < getImage().getX() + width && y > getImage().getY() && y < getImage().getY() + height;
     }
 }

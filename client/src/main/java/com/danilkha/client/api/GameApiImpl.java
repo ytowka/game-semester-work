@@ -23,8 +23,12 @@ public class GameApiImpl extends Api implements GameRoundApi {
     }
 
     @Override
-    public void shoot(float directionAngle) {
-
+    public void shoot(float x, float y, float directionAngle) {
+        drop(SHOOT, EncodingUtil.encodeIntArrayToString(new int[]{
+                Float.floatToRawIntBits(x),
+                Float.floatToRawIntBits(y),
+                Float.floatToRawIntBits(directionAngle),
+        }));
     }
 
     @Override
@@ -33,7 +37,7 @@ public class GameApiImpl extends Api implements GameRoundApi {
     }
 
     @Override
-    public void hitPlayer(int id) {
+    public void hitPlayer(int index) {
 
     }
 

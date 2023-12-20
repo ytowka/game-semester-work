@@ -15,8 +15,8 @@ public interface GameRoundApi {
     String SUBSCRIBE_ROUND = "game/round";
 
     void moveTo(float x, float y, float angle);
-    void shoot(float directionAngle);
+    void shoot(float x, float y, float directionAngle);
     void hitWall(int id);
-    void hitPlayer(int id);
+    void hitPlayer(int index);
     ObservableValue<GameEvent[]> subscribeGameEvents();
 }

@@ -1,14 +1,10 @@
 package com.danilkha.client.presentation.game.tank;
 
-import com.danilkha.client.presentation.game.Actor;
-import com.danilkha.client.presentation.game.GameModel;
-import javafx.scene.Node;
+import com.danilkha.client.presentation.game.Sprite;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import java.util.Arrays;
-
-public abstract class TankActor extends Actor {
+public abstract class TankSprite extends Sprite {
 
     private final int playerIndex;
     protected final ImageView node;
@@ -16,7 +12,7 @@ public abstract class TankActor extends Actor {
     protected float speed;
     protected float rotation;
 
-    public TankActor(int playerIndex, float width, float height){
+    public TankSprite(int playerIndex, float width, float height){
         super(width, height);
         this.playerIndex = playerIndex;
 
@@ -31,7 +27,9 @@ public abstract class TankActor extends Actor {
     }
 
 
-
+    public int getPlayerIndex() {
+        return playerIndex;
+    }
 
     @Override
     public ImageView getImage() {
