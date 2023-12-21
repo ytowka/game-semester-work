@@ -117,10 +117,10 @@ public class LobbyController extends RouterController {
                 });
 
 
-                System.out.println(Arrays.toString(gameEvents
+               /* System.out.println(Arrays.toString(gameEvents
                         .stream()
                         .map(GameEvent::serialize)
-                        .toArray()));
+                        .toArray()));*/
 
                 String[] data = new String[gameEvents.size()];
                 for (int i = 0; i < gameEvents.size(); i++) {
@@ -152,6 +152,13 @@ public class LobbyController extends RouterController {
                     .mapToObj(Float::intBitsToFloat)
                     .toList();
             lobby.currentRound.getValue().shoot(request.clientId(), data.get(0), data.get(1), data.get(2));
+        });
+
+        addHandler(GameRoundApi.HIT_PLAYER, request -> {
+            Player player = game.getPlayerByClientId(request.clientId());
+            Lobby lobby = player.getConnectedLobby();
+            int[] data = EncodingUtil.decodeStringToIntArray(request.data()[0]);
+            lobby.currentRound.getValue().hit(request.clientId(), data[0]);
         });
 
 

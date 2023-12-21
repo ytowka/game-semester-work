@@ -63,4 +63,9 @@ public class PlayerInfo {
     public int getIndex() {
         return index;
     }
+
+    public boolean hit(){
+        hp -= GameConfig.DEFAULT_DAMAGE;
+        return hp <= 0f;
+    }
 }

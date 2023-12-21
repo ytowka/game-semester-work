@@ -7,19 +7,19 @@ import org.danilkha.config.GameConfig;
 
 public class Missile extends Sprite {
 
-    private final boolean fromPlayer;
+    private final int launcher;
     private final ImageView imageView;
 
     private final float angle;
 
-    public Missile(boolean fromPlayer, float width, float height, float x, float y, float angle) {
+    public Missile(int launcher, float width, float height, float x, float y, float angle) {
         super(width, height);
-        this.fromPlayer = fromPlayer;
+        this.launcher = launcher;
 
         imageView = new ImageView(new Image("missile.png", width, height, false, false));
 
-        imageView.setX(x);
-        imageView.setY(y);
+        imageView.setX(x - width/2f);
+        imageView.setY(y - height/2f);
         imageView.setRotate(angle);
 
         this.angle = angle;
@@ -40,7 +40,7 @@ public class Missile extends Sprite {
         return imageView;
     }
 
-    public boolean isFromPlayer() {
-        return fromPlayer;
+    public int getPlayerIndex() {
+        return launcher;
     }
 }

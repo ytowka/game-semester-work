@@ -28,13 +28,15 @@ public class Lobby{
     private Thread eventLoop = new Thread(() -> {
         while (true){
             try {
-                Thread.sleep(1000/ServerConfig.TICK_RATE); //AAAAAUP1No1DlR3LwVwQgw==
+                Thread.sleep(1000/ServerConfig.TICK_RATE);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            currentRound.invalidate();
-            currentRound.getValue().resetSingleEvents();
+            synchronized (currentRound.getValue().getSingleEvents()){
+                currentRound.invalidate();
+                currentRound.getValue().resetSingleEvents();
+            }
         }
     });
 

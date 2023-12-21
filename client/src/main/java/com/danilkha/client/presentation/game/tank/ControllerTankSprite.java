@@ -5,6 +5,8 @@ import org.danilkha.config.GameConfig;
 
 import java.util.Arrays;
 
+import static java.lang.Math.*;
+
 public class ControllerTankSprite extends TankSprite {
     public ControllerTankSprite(int playerIndex, float width, float height) {
         super(playerIndex, width, height);
@@ -30,21 +32,41 @@ public class ControllerTankSprite extends TankSprite {
         var cos = vectorX/len;
         var sin = vectorY/len;
 
-        var deltaX = speed * cos * delta/1000f;
-        var deltaY = speed * sin * delta/1000f;
 
-        var angle = Math.acos(cos);
+
+        var targetAngle = Math.acos(cos);
 
 
         if(sin < 0){
-            angle *= -1;
+            targetAngle *= -1;
         }
+
+
+        double targetDegAngle = Math.toDegrees(targetAngle);
+
+
+        float frameSpeed = GameConfig.GUN_ROTATE_SPEED * (delta / 1000f);
+        if(Math.abs(targetDegAngle - degAngle) < frameSpeed){
+            degAngle = targetDegAngle;
+        }else{
+            double diff = degAngle - targetDegAngle;
+            if(0 < diff && diff < 180){
+                degAngle -= frameSpeed;
+            }
+
+            if(-180 < diff && diff < 0){
+                degAngle += frameSpeed;
+            }
+        }
+
+        degAngle %= 360;
+
+        var deltaX = speed * cos(toRadians(degAngle)) * delta/1000f;
+        var deltaY = speed * sin(toRadians(degAngle)) * delta/1000f;
+
         double x = node.getX() + deltaX;
         double y = node.getY() + deltaY;
 
-
-
-        degAngle = Math.toDegrees(angle);
         getGameStage().getPlayerMove().setValue(new float[]{
                 (float)x, (float)y, (float)degAngle
         });
@@ -53,13 +75,14 @@ public class ControllerTankSprite extends TankSprite {
         node.setY(y);
 
 
-        GameModel.debugInfo.setText("x = %s \ny = %s\nmouseX = %s\nmouesY = %s\nkeys = %s\nangle=%s".formatted(
+        GameModel.debugInfo.setText("x = %s \ny = %s\nmouseX = %s\nmouesY = %s\nkeys = %s\nangle=%s\nhp = %s".formatted(
                 getCenterX(),
                 getCenterY(),
                 getGameStage().getMouseX(),
                 getGameStage().getMouseY(),
                 Arrays.toString(getGameStage().pressedKeys.toArray()),
-                degAngle
+                degAngle,
+                hp
         ));
         node.setRotate(degAngle+90);
     }
@@ -73,7 +96,7 @@ public class ControllerTankSprite extends TankSprite {
     }
 
     public boolean hit(){
-        hp -=1;
+        hp -= GameConfig.DEFAULT_DAMAGE;
         return hp <= 0;
     }
 

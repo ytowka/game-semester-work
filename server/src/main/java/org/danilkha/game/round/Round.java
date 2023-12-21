@@ -28,7 +28,7 @@ public class Round {
         playerInfo.setY(y);
     }
 
-    public void shoot(int clientId, float x, float y, float directionAngle) {
+    public synchronized void shoot(int clientId, float x, float y, float directionAngle) {
         singleEvents.add(new GameEvent.Shoot(
                 players.get(clientId).getIndex(),
                 x,
@@ -37,11 +37,20 @@ public class Round {
         ));
     }
 
-    public void hit(int fromId, int toId) {
-
+    public synchronized void hit(int fromId, int toIndex) {
+        for (PlayerInfo player : players.values()) {
+            if(player.getIndex() == toIndex){
+                if(player.hit()){
+                    singleEvents.add(new GameEvent.Destroy(player.getIndex()));
+                };
+            }
+        }
+        singleEvents.add(new GameEvent.HitTank(
+               players.get(fromId).getIndex(), toIndex
+        ));
     }
 
-    public void resetSingleEvents(){
+    public synchronized void resetSingleEvents(){
         singleEvents.clear();
     }
     public List<GameEvent> getSingleEvents(){

@@ -89,6 +89,18 @@ public sealed interface GameEvent {
         }
     }
 
+    record Destroy(
+            int playerIndex
+    )implements GameEvent{
+        @Override
+        public String serialize() {
+            int[] data = new int[]{playerIndex};
+            return "DIE&%s".formatted(
+                    EncodingUtil.encodeIntArrayToString(data)
+            );
+        }
+    }
+
     static GameEvent deserialize(String rawData){
         if(rawData.startsWith("SR")){
             String[] parts = rawData.split("&");
@@ -131,6 +143,11 @@ public sealed interface GameEvent {
             String[] parts = rawData.split("&");
             int[] data = EncodingUtil.decodeStringToIntArray(parts[1]);
             return new HitWall(data[0]);
+        }
+        if(rawData.startsWith("DIE")){
+            String[] parts = rawData.split("&");
+            int[] data = EncodingUtil.decodeStringToIntArray(parts[1]);
+            return new Destroy(data[0]);
         }
         return null;
     }

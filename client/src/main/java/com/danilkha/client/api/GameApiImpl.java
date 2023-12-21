@@ -38,7 +38,9 @@ public class GameApiImpl extends Api implements GameRoundApi {
 
     @Override
     public void hitPlayer(int index) {
-
+        drop(HIT_PLAYER, EncodingUtil.encodeIntArrayToString(new int[]{
+               index,
+        }));
     }
 
     @Override

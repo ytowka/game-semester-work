@@ -47,7 +47,6 @@ public class SocketClientConnection implements PackageReceiver {
 
     private void runReceiver(){
         while (!socket.isClosed()){
-            System.out.println("runReceiver");
             try {
                 String data = reader.readLine();
                 packageReceiver.receiveData(data);

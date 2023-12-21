@@ -1,7 +1,5 @@
 package com.danilkha.client.presentation.game;
 
-import com.danilkha.client.presentation.game.tank.ControllerTankSprite;
-import com.danilkha.client.presentation.game.tank.RemoteTankSprite;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -9,10 +7,6 @@ import javafx.scene.layout.BorderPane;
 import org.danilkha.api.GameEvent;
 import org.danilkha.api.GameRoundApi;
 import org.danilkha.config.GameConfig;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class GameModel implements GameCallback{
 
@@ -25,28 +19,10 @@ public class GameModel implements GameCallback{
 
     public static final int WINDOW_SIZE = 900;
 
-    public GameModel(GameRoundApi gameRoundApi, String[] playerName, String me) {
+    public GameModel(GameRoundApi gameRoundApi, String[] playerNames, String me) {
         this.gameRoundApi = gameRoundApi;
 
-
-        ControllerTankSprite controllerTankSprite = null;
-        List<RemoteTankSprite> remoteTankSprites = new ArrayList<>();
-        System.out.println(Arrays.toString(playerName));
-        for (int i = 0; i < playerName.length; i++) {
-            String s = playerName[i];
-            if (s.equals(me)) {
-                controllerTankSprite = new ControllerTankSprite(i, 50, 50);
-            } else {
-                remoteTankSprites.add(new RemoteTankSprite(i, 50, 50));
-            }
-        }
-
-        gameStage = new GameStage(controllerTankSprite, remoteTankSprites, GameConfig.MAP_SIZE, GameConfig.MAP_SIZE, this);
-
-        controllerTankSprite.setGameStage(gameStage);
-        for (RemoteTankSprite remoteTankSprite : remoteTankSprites) {
-            remoteTankSprite.setGameStage(gameStage);
-        }
+        gameStage = new GameStage(playerNames, me,  GameConfig.MAP_SIZE, GameConfig.MAP_SIZE, this);
 
         gameStage.setPrefWidth(WINDOW_SIZE);
         gameStage.setPrefHeight(WINDOW_SIZE);
@@ -91,8 +67,15 @@ public class GameModel implements GameCallback{
                         );
                     }
                     if(gameEvent instanceof GameEvent.Shoot shoot){
-                        gameStage.addMissile(shoot.x(), shoot.y(), shoot.angle());
+                        gameStage.addMissile(shoot.playerIndex(), shoot.x(), shoot.y(), shoot.angle());
                     }
+                    if(gameEvent instanceof GameEvent.HitTank hit){
+                        gameStage.registerHit(hit.to());
+                    }
+                    if(gameEvent instanceof GameEvent.Destroy destroy){
+                        gameStage.notifyPlayerDead(destroy.playerIndex());
+                    }
+
                 }
             });
         });

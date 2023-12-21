@@ -41,7 +41,9 @@ public class RouterController extends RequestPackageReceiver {
 
     @Override
     public final void receiveRequest(ClientRequest clientRequest) {
-        System.out.println(clientRequest);
+        if(!clientRequest.path().equals("game/move")){
+            System.out.println(clientRequest);
+        }
         if(clientRequest.type() == ClientRequest.Type.GET){
             GetHandler getHandler = getHandlers.get(clientRequest.path());
             if(getHandler != null){

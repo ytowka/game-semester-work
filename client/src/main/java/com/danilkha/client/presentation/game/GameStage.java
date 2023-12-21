@@ -10,10 +10,7 @@ import org.danilkha.config.GameConfig;
 import org.danilkha.utils.observable.EqualityPolicy;
 import org.danilkha.utils.observable.MutableObservableValue;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class GameStage extends Pane{
 
@@ -21,11 +18,11 @@ public class GameStage extends Pane{
 
 
 
-    private final ControllerTankSprite controllerTankSprite;
+    private ControllerTankSprite controllerTankSprite;
     private final List<RemoteTankSprite> remoteTanks;
     private final List<Missile> missiles;
 
-    private final long lastShoot = 0;
+    private long lastShoot = 0;
 
     private float mouseX = 0f;
     private float mouseY = 0f;
@@ -46,7 +43,8 @@ public class GameStage extends Pane{
 
         @Override
         public void onMouseClicked(float x, float y) {
-            if(System.currentTimeMillis() - lastShoot > GameConfig.RELOAD_PERIOD){
+            if(System.currentTimeMillis() - lastShoot > GameConfig.RELOAD_PERIOD && !controllerTankSprite.isDead()){
+                lastShoot = System.currentTimeMillis();
                 shoot(
                         controllerTankSprite.getCenterX(),
                         controllerTankSprite.getCenterY(),
@@ -70,7 +68,7 @@ public class GameStage extends Pane{
 
     private void shoot(float centerX, float centerY, double degAngle) {
         Missile missile = new Missile(
-                true,
+                controllerTankSprite.getPlayerIndex(),
                 GameModel.getActualSize(GameConfig.MISSILE_SIZE),
                 GameModel.getActualSize(GameConfig.MISSILE_SIZE),
                 centerX,
@@ -78,17 +76,17 @@ public class GameStage extends Pane{
                 (float) degAngle
         );
         getChildren().add(missile.getImage());
-        missiles.add(missile);
+        synchronized (missiles){
+            missiles.add(missile);
+        }
         gameCallback.shoot(centerX, centerY, degAngle);
     }
 
-    public GameStage(ControllerTankSprite controllerTankSprite, List<RemoteTankSprite> remoteTanks, float gameWidth, float gameHeight, GameCallback gameCallback){
-        this.controllerTankSprite = controllerTankSprite;
-        this.remoteTanks = remoteTanks;
-        getChildren().add(controllerTankSprite.getImage());
-        for (RemoteTankSprite remoteTank : remoteTanks) {
-            getChildren().add(remoteTank.getImage());
-        }
+    public GameStage(String[] players, String controller, float gameWidth, float gameHeight, GameCallback gameCallback){
+
+        remoteTanks = new ArrayList<>();
+        respawnTanks(players, controller);
+
         missiles = new ArrayList<>();
 
         this.gameWidth = gameWidth;
@@ -105,28 +103,49 @@ public class GameStage extends Pane{
         };
         pressedKeys = new HashSet<>();
         this.gameCallback = gameCallback;
+
     }
 
-    private synchronized void doActors(int delta){
-        controllerTankSprite.onAct(delta);
+    private void doActors(int delta){
+        if(!controllerTankSprite.isDead()){
+            controllerTankSprite.onAct(delta);
+        }
         remoteTanks.forEach(sprite -> {
             sprite.onAct(delta);
         });
-        for (Missile missile : missiles) {
+
+        ListIterator<Missile> missileListIterator = missiles.listIterator();
+        while (missileListIterator.hasNext()){
+            Missile missile = missileListIterator.next();
+
             missile.onAct(delta);
             if(missile.getCenterY() < -100
                     || missile.getCenterX() > GameModel.WINDOW_SIZE + 100
                     || missile.getCenterY() < -100
-                    ||missile.getCenterY() > GameModel.WINDOW_SIZE + 100
+                    || missile.getCenterY() > GameModel.WINDOW_SIZE + 100
             ){
-                missiles.remove(missile);
-            }else if(missile.isFromPlayer()){
+                getChildren().remove(missile.getImage());
+                missileListIterator.remove();
+            }else if(missile.getPlayerIndex() == controllerTankSprite.getPlayerIndex()){
                 for (RemoteTankSprite remoteTank : remoteTanks) {
                     if(remoteTank.hits(missile.getCenterX(), missile.getCenterY())){
                         gameCallback.playerHit(remoteTank.getPlayerIndex());
-                        missiles.remove(missile);
+                        getChildren().remove(missile.getImage());
+                        missileListIterator.remove();
                         break;
                     }
+                }
+            }else{
+                for (RemoteTankSprite remoteTank : remoteTanks) {
+                    if(remoteTank.hits(missile.getCenterX(), missile.getCenterY()) && remoteTank.getPlayerIndex() != missile.getPlayerIndex()){
+                        getChildren().remove(missile.getImage());
+                        missileListIterator.remove();
+                        break;
+                    }
+                }
+                if(controllerTankSprite.hits(missile.getCenterX(), missile.getCenterY())){
+                    getChildren().remove(missile.getImage());
+                    missileListIterator.remove();
                 }
             }
         }
@@ -158,20 +177,74 @@ public class GameStage extends Pane{
         }
     }
 
-    public void addMissile(float x, float y, float angle){
-        Missile missile = new Missile(
-                false,
-                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
-                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
-                x,
-                y,
-                angle
-        );
-        getChildren().add(missile.getImage());
-        missiles.add(missile);
+    public void addMissile(int playerIndex, float x, float y, float angle){
+        if(controllerTankSprite.getPlayerIndex() != playerIndex){
+            Missile missile = new Missile(
+                    playerIndex,
+                    GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                    GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                    x,
+                    y,
+                    angle
+            );
+            getChildren().add(missile.getImage());
+            missiles.add(missile);
+        }
+    }
+
+    private void respawnTanks(String[] players, String controller){
+
+        for (RemoteTankSprite remoteTank : remoteTanks) {
+            getChildren().remove(remoteTank.getImage());
+        }
+        remoteTanks.clear();
+        if(controllerTankSprite != null){
+            getChildren().remove(controllerTankSprite);
+        }
+
+        for (int i = 0; i < players.length; i++) {
+            String s = players[i];
+            if (s.equals(controller)) {
+                controllerTankSprite = new ControllerTankSprite(i, 50, 50) ;
+                controllerTankSprite.setGameStage(this);
+            } else {
+                remoteTanks.add(new RemoteTankSprite(i, 50, 50));
+            }
+        }
+
+        getChildren().add(controllerTankSprite.getImage());
+        for (RemoteTankSprite remoteTank : remoteTanks) {
+            getChildren().add(remoteTank.getImage());
+        }
+
+    }
+
+    public void resetStage(){
+
     }
 
     public MutableObservableValue<float[]> getPlayerMove() {
         return playerMove;
+    }
+
+    public void registerHit(int index) {
+        if(controllerTankSprite.getPlayerIndex() == index){
+            boolean dead = controllerTankSprite.hit();
+            if(dead){
+                getChildren().remove(controllerTankSprite.getImage());
+            }
+        }
+    }
+
+    public void notifyPlayerDead(int index){
+        ListIterator<RemoteTankSprite> remoteTankSpriteListIterator = remoteTanks.listIterator();
+        while (remoteTankSpriteListIterator.hasNext()){
+            RemoteTankSprite tankSprite = remoteTankSpriteListIterator.next();
+            if(tankSprite.getPlayerIndex() == index){
+                getChildren().remove(tankSprite.getImage());
+                remoteTankSpriteListIterator.remove();
+                break;
+            }
+        }
     }
 }
