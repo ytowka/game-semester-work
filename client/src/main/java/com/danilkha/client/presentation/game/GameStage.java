@@ -114,6 +114,8 @@ public class GameStage extends Pane{
         while (missileListIterator.hasNext()){
             Missile missile = missileListIterator.next();
 
+            boolean hitted = false;
+
             missile.onAct(delta);
             if(missile.getCenterY() < -100
                     || missile.getCenterX() > GameModel.WINDOW_SIZE + 100
@@ -123,11 +125,13 @@ public class GameStage extends Pane{
                 getChildren().remove(missile.getImage());
                 missileListIterator.remove();
             }else if(missile.getPlayerIndex() == controllerTankSprite.getPlayerIndex()){
+
                 for (RemoteTankSprite remoteTank : remoteTanks) {
                     if(remoteTank.hits(missile.getCenterX(), missile.getCenterY())){
                         gameCallback.playerHit(remoteTank.getPlayerIndex());
                         getChildren().remove(missile.getImage());
                         missileListIterator.remove();
+                        hitted = true;
                         break;
                     }
                 }
@@ -136,14 +140,38 @@ public class GameStage extends Pane{
                     if(remoteTank.hits(missile.getCenterX(), missile.getCenterY()) && remoteTank.getPlayerIndex() != missile.getPlayerIndex()){
                         getChildren().remove(missile.getImage());
                         missileListIterator.remove();
+                        hitted = true;
                         break;
                     }
                 }
                 if(controllerTankSprite.hits(missile.getCenterX(), missile.getCenterY())){
                     getChildren().remove(missile.getImage());
                     missileListIterator.remove();
+                    hitted = true;
                 }
             }
+            int[] mapCell = new int[]{Math.round(GameModel.getGameSize((float) missile.getX())), Math.round(GameModel.getGameSize((float) missile.getY()))};
+            if(!hitted){
+                for (int i = mapCell[0]-1; i < mapCell[0] + 2 && !hitted; i++) {
+                    for (int j = mapCell[1] - 1; j < mapCell[1] + 2 && !hitted; j++) {
+                        Wall wall = null;
+                        if (i >= 0 && i < walls.length && j >= 0 && j < walls[i].length) {
+                            wall = walls[i][j];
+                        }
+                        if(wall != null){
+                            if(wall.hits(missile.getCenterX(), missile.getCenterY())){
+                                if(missile.getPlayerIndex() == controllerTankSprite.getPlayerIndex()){
+                                    gameCallback.wallHit(i,j);
+                                }
+                                getChildren().remove(missile.getImage());
+                                missileListIterator.remove();
+                                hitted = true;
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 
@@ -359,5 +387,17 @@ public class GameStage extends Pane{
             }
         }
         return vector;
+    }
+
+    public void registerWallHit(int x, int y) {
+        Wall wall = walls[x][y];
+        if(wall != null){
+            boolean broke = wall.hit();
+            if (broke){
+                getChildren().remove(wall.getImage());
+                walls[x][y] = null;
+            }
+        }
+
     }
 }

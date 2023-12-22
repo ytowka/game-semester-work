@@ -100,6 +100,9 @@ public class GameModel implements GameCallback{
                     if(gameEvent instanceof GameEvent.Destroy destroy){
                         gameStage.notifyPlayerDead(destroy.playerIndex());
                     }
+                    if(gameEvent instanceof GameEvent.HitWall wall){
+                        gameStage.registerWallHit(wall.x(), wall.y());
+                    }
                 }
                 if(finalLog){
                     System.out.println();
@@ -142,7 +145,7 @@ public class GameModel implements GameCallback{
 
     @Override
     public void wallHit(int x, int y) {
-
+        gameRoundApi.hitWall(x, y);
     }
 
     private String formatScoreBoard(int[] scores){
