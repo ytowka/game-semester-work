@@ -26,6 +26,14 @@ public abstract class Sprite {
         return (float) getImage().getX() + width/2f;
     }
 
+    public double getX(){
+        return getImage().getX();
+    }
+
+    public double getY(){
+        return getImage().getY();
+    }
+
     public float getCenterY(){
         return (float) getImage().getY() + height/2f;
     }

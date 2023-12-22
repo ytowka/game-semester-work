@@ -20,6 +20,8 @@ public class ControllerTankSprite extends TankSprite {
     public void onAct(int delta) {
         if(getGameStage().isKeyPressed(87)){
             speed = GameConfig.TANK_MOVE_SPEED;
+        }else if(getGameStage().isKeyPressed(83)){
+            speed = -GameConfig.TANK_MOVE_SPEED;
         }else {
             speed = 0;
         }
@@ -82,6 +84,11 @@ public class ControllerTankSprite extends TankSprite {
 
         double x = node.getX() + deltaX;
         double y = node.getY() + deltaY;
+
+        double[] collisions = getGameStage().calculateCollisionCorrection(x, y, getWidth(), getHeight());
+
+        x += collisions[0];
+        y += collisions[1];
 
         getGameStage().getPlayerMove().setValue(new float[]{
                 (float)x, (float)y, (float)degAngle

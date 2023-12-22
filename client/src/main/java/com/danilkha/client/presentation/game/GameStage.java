@@ -11,7 +11,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import org.danilkha.config.GameConfig;
 import org.danilkha.utils.observable.EqualityPolicy;
 import org.danilkha.utils.observable.MutableObservableValue;
@@ -294,5 +293,71 @@ public class GameStage extends Pane{
 
     public String getControllerPlayerName() {
         return controllerPlayerName;
+    }
+
+    public double[] calculateCollisionCorrection(double x, double y, double width, double height) {
+
+
+        double[] vector = new double[2];
+        if(x < 0){
+            vector[0] = -x;
+            x = 0;
+        }
+        if(y < 0){
+            vector[1] = -y;
+            y = 0;
+        }
+        if(x + width > GameModel.WINDOW_SIZE){
+            vector[0] = -(x + width - GameModel.WINDOW_SIZE);
+            x = width - GameModel.WINDOW_SIZE;
+        }
+        if(y + height > GameModel.WINDOW_SIZE){
+            vector[1] = -(y + height - GameModel.WINDOW_SIZE);
+            y = height - GameModel.WINDOW_SIZE;
+        }
+        int[] mapCell = new int[]{Math.round(GameModel.getGameSize((float) x)), Math.round(GameModel.getGameSize((float) y))};
+
+        for (int i = mapCell[0]-1; i < mapCell[0] + 2; i++) {
+            for (int j = mapCell[1]-1; j < mapCell[1] + 2; j++) {
+                Wall wall = null;
+                if(i>=0 && i<walls.length && j>=0 && j<walls[i].length){
+                    wall = walls[i][j];
+                    if(wall != null){
+                        //wall.getImage().setRotate(wall.getImage().getRotate() + 5);
+                    }
+                }
+                if(wall != null){
+                    double xStartOverlap = x + width - wall.getX();
+                    double xEndOverlap = wall.getX() + wall.getWidth() - x; // < 0
+
+                    double yStartOverlap = y + height - wall.getY();
+                    double yEndOverlap = wall.getY() + wall.getHeight() - y;
+
+                    if(xStartOverlap > 0 && xEndOverlap > 0 && yStartOverlap > 0 && yEndOverlap > 0){
+                        if(Math.min(xStartOverlap, xEndOverlap) < Math.min(yStartOverlap, yEndOverlap)){
+                            if(xStartOverlap < xEndOverlap){
+                                vector[0] -= xStartOverlap;
+                                x -= xStartOverlap;
+                            }else{
+                                vector[0] += xEndOverlap;
+                                x += xEndOverlap;
+                            }
+                        }else{
+                            if(yStartOverlap < yEndOverlap){
+                                vector[1] -= yStartOverlap;
+                                y -= yStartOverlap;
+                            }else{
+                                vector[1] += yEndOverlap;
+                                y += yEndOverlap;
+                            }
+                        }
+                        //wall.getImage().setRotate(wall.getImage().getRotate() + 5);
+                    }
+
+                }
+
+            }
+        }
+        return vector;
     }
 }
