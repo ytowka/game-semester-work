@@ -47,6 +47,7 @@ public class Round {
     }
 
     public synchronized void hit(int fromId, int toIndex) {
+        boolean roundEnd = false;
         if(winner == null){
             for (PlayerInfo player : players.values()) {
                 if(player.getIndex() == toIndex){
@@ -65,11 +66,12 @@ public class Round {
                         winner = lastAlivePlayer;
                         winner.addScore();
                         resetRound();
+                        roundEnd = true;
                         winner = null;
                     }
                 }
             }
-            if(winner == null){
+            if(!roundEnd){
                 singleEvents.add(new GameEvent.HitTank(
                         players.get(fromId).getIndex(), toIndex
                 ));
@@ -104,9 +106,5 @@ public class Round {
 
     public Map<Integer, PlayerInfo> getPlayers() {
         return players;
-    }
-
-    public PlayerInfo getWinner() {
-        return winner;
     }
 }

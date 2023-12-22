@@ -337,11 +337,11 @@ public class GameStage extends Pane{
         }
         if(x + width > GameModel.WINDOW_SIZE){
             vector[0] = -(x + width - GameModel.WINDOW_SIZE);
-            x = width - GameModel.WINDOW_SIZE;
+            x = GameModel.WINDOW_SIZE - width;
         }
         if(y + height > GameModel.WINDOW_SIZE){
             vector[1] = -(y + height - GameModel.WINDOW_SIZE);
-            y = height - GameModel.WINDOW_SIZE;
+            y = GameModel.WINDOW_SIZE - height;
         }
         int[] mapCell = new int[]{Math.round(GameModel.getGameSize((float) x)), Math.round(GameModel.getGameSize((float) y))};
 

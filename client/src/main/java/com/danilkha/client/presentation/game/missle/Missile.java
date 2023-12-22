@@ -28,8 +28,8 @@ public class Missile extends Sprite {
     @Override
     public void onAct(int delta) {
 
-        double dx = GameConfig.MISSILE_SPEED * Math.cos(Math.toRadians(angle))/1000f;
-        double dy = GameConfig.MISSILE_SPEED * Math.sin(Math.toRadians(angle))/1000f;
+        double dx = GameConfig.MISSILE_SPEED * Math.cos(Math.toRadians(angle))/1000f*delta;
+        double dy = GameConfig.MISSILE_SPEED * Math.sin(Math.toRadians(angle))/1000f*delta;
 
         imageView.setX(imageView.getX() + dx);
         imageView.setY(imageView.getY() + dy);

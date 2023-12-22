@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import org.danilkha.api.GameEvent;
 import org.danilkha.api.GameRoundApi;
 import org.danilkha.config.GameConfig;
@@ -21,27 +22,33 @@ public class GameModel implements GameCallback{
 
     private final GameStage gameStage;
 
-    public static final int WINDOW_SIZE = 900;
+    public static final int WINDOW_SIZE = 700;
 
     public GameModel(GameRoundApi gameRoundApi, String[] playerNames, String me) {
         this.gameRoundApi = gameRoundApi;
 
         gameStage = new GameStage(playerNames, me,  GameConfig.MAP_SIZE, GameConfig.MAP_SIZE, this);
 
+        gameStage.setMinHeight(WINDOW_SIZE);
+        gameStage.setMinWidth(WINDOW_SIZE);
         gameStage.setPrefWidth(WINDOW_SIZE);
         gameStage.setPrefHeight(WINDOW_SIZE);
 
         debugInfo = new Label();
         scoreBoard = new Label();
 
-        BorderPane root = new BorderPane(gameStage);
+        VBox root = new VBox();
 
         BorderPane info = new BorderPane();
 
-        info.setLeft(debugInfo);
+        //info.setLeft(debugInfo);
         info.setRight(scoreBoard);
 
-        root.setTop(info);
+        root.getChildren().add(info);
+
+        root.getChildren().add(scoreBoard);
+
+        root.getChildren().add(gameStage);
 
         scene = new Scene(root);
 
