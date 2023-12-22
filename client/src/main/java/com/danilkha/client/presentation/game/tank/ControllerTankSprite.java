@@ -57,9 +57,25 @@ public class ControllerTankSprite extends TankSprite {
             if(-180 < diff && diff < 0){
                 degAngle += frameSpeed;
             }
+
+            if(diff < -180){
+                degAngle -= frameSpeed;
+            }
+
+            if(diff > 180){
+                degAngle += frameSpeed;
+            }
+
         }
 
-        degAngle %= 360;
+        if(degAngle < -180){
+            degAngle = 360 + degAngle;
+        }
+
+        if(degAngle > 180){
+            degAngle = -360 + degAngle;
+        }
+
 
         var deltaX = speed * cos(toRadians(degAngle)) * delta/1000f;
         var deltaY = speed * sin(toRadians(degAngle)) * delta/1000f;
@@ -75,13 +91,14 @@ public class ControllerTankSprite extends TankSprite {
         node.setY(y);
 
 
-        GameModel.debugInfo.setText("x = %s \ny = %s\nmouseX = %s\nmouesY = %s\nkeys = %s\nangle=%s\nhp = %s".formatted(
+        GameModel.debugInfo.setText("x = %s \ny = %s\nmouseX = %s\nmouesY = %s\nkeys = %s\nangle=%s\ntarget angle=%s\nhp = %s".formatted(
                 getCenterX(),
                 getCenterY(),
                 getGameStage().getMouseX(),
                 getGameStage().getMouseY(),
                 Arrays.toString(getGameStage().pressedKeys.toArray()),
-                degAngle,
+                Math.round(degAngle),
+                Math.round(targetDegAngle),
                 hp
         ));
         node.setRotate(degAngle+90);
