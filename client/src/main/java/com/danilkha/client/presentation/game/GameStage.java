@@ -3,8 +3,15 @@ package com.danilkha.client.presentation.game;
 import com.danilkha.client.presentation.game.missle.Missile;
 import com.danilkha.client.presentation.game.tank.ControllerTankSprite;
 import com.danilkha.client.presentation.game.tank.RemoteTankSprite;
+import com.danilkha.client.presentation.game.wall.Wall;
 import javafx.animation.AnimationTimer;
+import javafx.geometry.Insets;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import org.danilkha.config.GameConfig;
 import org.danilkha.utils.observable.EqualityPolicy;
 import org.danilkha.utils.observable.MutableObservableValue;
@@ -34,6 +41,8 @@ public class GameStage extends Pane{
     public final Set<Integer> pressedKeys;
 
     private final MutableObservableValue<float[]> playerMove = new MutableObservableValue<>(EqualityPolicy.REFERENTIAL);
+
+    private final Wall[][] walls;
 
     public final InputListener inputListener = new InputListener() {
         @Override
@@ -73,8 +82,8 @@ public class GameStage extends Pane{
         controllerPlayerName = controller;
 
         remoteTanks = new ArrayList<>();
-
         missiles = new ArrayList<>();
+        setBackground(new Background(new BackgroundFill(new Color(0.2, 0, 0, 1), CornerRadii.EMPTY, Insets.EMPTY)));
 
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
@@ -91,6 +100,7 @@ public class GameStage extends Pane{
         pressedKeys = new HashSet<>();
         this.gameCallback = gameCallback;
 
+        walls = new Wall[GameConfig.MAP_SIZE][GameConfig.MAP_SIZE];
     }
 
     private void doActors(int delta){
@@ -194,7 +204,34 @@ public class GameStage extends Pane{
         }
     }
 
-    public void resetStage(){
+    public void resetStage(boolean[][] map){
+        for (Missile missile : missiles) {
+            getChildren().remove(missile.getImage());
+        }
+
+
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map.length; j++) {
+                Wall wall = walls[i][j];
+                if(wall != null){
+                    getChildren().remove(wall.getImage());
+                }
+                walls[i][j] = null;
+                if(map[i][j]){
+                    wall = new Wall(
+                            GameModel.getActualSize(1f),
+                            GameModel.getActualSize(1f),
+                            GameModel.getActualSize(i),
+                            GameModel.getActualSize(j)
+                    );
+                    walls[i][j] = wall;
+                    getChildren().add(wall.getImage());
+                }
+            }
+        }
+
+        missiles.clear();
+
         for (RemoteTankSprite remoteTank : remoteTanks) {
             getChildren().remove(remoteTank.getImage());
         }
@@ -206,10 +243,15 @@ public class GameStage extends Pane{
         for (int i = 0; i < playerNames.length; i++) {
             String s = playerNames[i];
             if (s.equals(controllerPlayerName)) {
-                controllerTankSprite = new ControllerTankSprite(i, 50, 50) ;
+                controllerTankSprite = new ControllerTankSprite(
+                        i,
+                        GameModel.getActualSize(GameConfig.TANK_SIZE),
+                        GameModel.getActualSize(GameConfig.TANK_SIZE)) ;
                 controllerTankSprite.setGameStage(this);
             } else {
-                remoteTanks.add(new RemoteTankSprite(i, 50, 50));
+                remoteTanks.add(new RemoteTankSprite(i,
+                        GameModel.getActualSize(GameConfig.TANK_SIZE),
+                        GameModel.getActualSize(GameConfig.TANK_SIZE)));
             }
         }
 

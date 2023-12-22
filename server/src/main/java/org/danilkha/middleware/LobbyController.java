@@ -109,30 +109,25 @@ public class LobbyController extends RouterController {
             Lobby lobby = game.getPlayerByClientId(request.clientId()).getConnectedLobby();
 
             lobby.currentRound.addObserver(round -> {
-                List<GameEvent> gameEvents = new ArrayList<>(round.getSingleEvents());
-                round.getPlayers().forEach((id, playerInfo) -> {
-                    if(id != request.clientId()){
-                        gameEvents.add(new GameEvent.PlayerMove(playerInfo.getIndex(), playerInfo.getX(), playerInfo.getY(), playerInfo.getAngle()));
+                if(round != null){
+                    List<GameEvent> gameEvents = new ArrayList<>(round.getSingleEvents());
+                    round.getPlayers().forEach((id, playerInfo) -> {
+                        if(id != request.clientId()){
+                            gameEvents.add(new GameEvent.PlayerMove(playerInfo.getIndex(), playerInfo.getX(), playerInfo.getY(), playerInfo.getAngle()));
+                        }
+                    });
+
+                    String[] data = new String[gameEvents.size()];
+                    for (int i = 0; i < gameEvents.size(); i++) {
+                        data[i] = gameEvents.get(i).serialize();
                     }
-                });
 
-
-               /* System.out.println(Arrays.toString(gameEvents
-                        .stream()
-                        .map(GameEvent::serialize)
-                        .toArray()));*/
-
-                String[] data = new String[gameEvents.size()];
-                for (int i = 0; i < gameEvents.size(); i++) {
-                    data[i] = gameEvents.get(i).serialize();
+                    server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
+                            Response.Type.EMIT,
+                            request.path(),
+                            data
+                    )));
                 }
-
-
-                server.receiveData(request.clientId(), Protocol.buildResponse(new Response(
-                        Response.Type.EMIT,
-                        request.path(),
-                        data
-                )));
             });
         });
 
@@ -159,6 +154,13 @@ public class LobbyController extends RouterController {
             Lobby lobby = player.getConnectedLobby();
             int[] data = EncodingUtil.decodeStringToIntArray(request.data()[0]);
             lobby.currentRound.getValue().hit(request.clientId(), data[0]);
+        });
+
+        addHandler(GameRoundApi.HIT_WALL, request -> {
+            Player player = game.getPlayerByClientId(request.clientId());
+            Lobby lobby = player.getConnectedLobby();
+            int[] data = EncodingUtil.decodeStringToIntArray(request.data()[0]);
+            lobby.currentRound.getValue().hitWall(data[0], data[1]);
         });
 
 

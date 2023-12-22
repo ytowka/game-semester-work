@@ -72,7 +72,7 @@ public class Api implements PackageReceiver {
     @Override
     public final void receiveData(String data) {
         Response response = Protocol.ParseResponse(data);
-        System.out.println(response);
+        //System.out.println(response);
 
         switch (response.type()){
             case GIVE -> processGetResponse(response);

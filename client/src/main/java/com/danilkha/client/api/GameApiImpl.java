@@ -32,8 +32,8 @@ public class GameApiImpl extends Api implements GameRoundApi {
     }
 
     @Override
-    public void hitWall(int id) {
-
+    public void hitWall(int x, int y) {
+        drop(HIT_WALL, EncodingUtil.encodeIntArrayToString(new int[]{x, y}));
     }
 
     @Override

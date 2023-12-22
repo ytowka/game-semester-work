@@ -66,6 +66,7 @@ public class Server implements ClientPackageReceiver{
 
     @Override
     public void receiveData(int clientId, String data) {
+        System.out.println("sent to "+clientId+" : "+data);
         ServerSocketClientConnection clientConnection = clientConnectionList.get(clientId);
         clientConnection.receiveData(data);
     }

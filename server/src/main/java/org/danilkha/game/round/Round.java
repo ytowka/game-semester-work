@@ -2,6 +2,7 @@ package org.danilkha.game.round;
 
 import org.danilkha.api.GameEvent;
 import org.danilkha.config.GameConfig;
+import org.danilkha.game.MapGenerator;
 import org.danilkha.game.Player;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class Round {
         for (PlayerInfo player : players) {
             this.players.put(player.getPlayer().getId(), player);
         }
+        resetRound();
     }
 
     public synchronized void moveTo(int clientId, float x, float y, float angle) {
@@ -63,13 +65,20 @@ public class Round {
                         winner = lastAlivePlayer;
                         winner.addScore();
                         resetRound();
+                        winner = null;
                     }
                 }
             }
-            singleEvents.add(new GameEvent.HitTank(
-                    players.get(fromId).getIndex(), toIndex
-            ));
+            if(winner == null){
+                singleEvents.add(new GameEvent.HitTank(
+                        players.get(fromId).getIndex(), toIndex
+                ));
+            }
         }
+    }
+
+    public synchronized void hitWall(int x, int y) {
+        singleEvents.add(new GameEvent.HitWall(x, y));
     }
 
     private void resetRound(){
@@ -82,7 +91,7 @@ public class Round {
         singleEvents.clear();
         singleEvents.add(new GameEvent.StartRound(
                 scores,
-                new boolean[GameConfig.MAP_SIZE][GameConfig.MAP_SIZE]
+                MapGenerator.generateMap(GameConfig.MAP_SIZE)
         ));
     }
 

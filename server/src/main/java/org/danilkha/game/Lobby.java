@@ -33,11 +33,8 @@ public class Lobby{
                 throw new RuntimeException(e);
             }
 
-            Round round = currentRound.getValue();
-            synchronized (round){
-                currentRound.invalidate();
-                currentRound.getValue().resetSingleEvents();
-            }
+            currentRound.invalidate();
+            currentRound.getValue().resetSingleEvents();
         }
     });
 

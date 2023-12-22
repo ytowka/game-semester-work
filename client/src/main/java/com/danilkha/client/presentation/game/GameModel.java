@@ -9,6 +9,7 @@ import org.danilkha.api.GameRoundApi;
 import org.danilkha.config.GameConfig;
 
 import java.security.PublicKey;
+import java.util.Set;
 
 public class GameModel implements GameCallback{
 
@@ -64,11 +65,22 @@ public class GameModel implements GameCallback{
             gameStage.inputListener.onMouseClicked((float) event.getX(), (float) event.getY());
         });
 
+
         gameRoundApi.subscribeGameEvents().addObserver(value -> {
+            boolean log = false;
+            for (GameEvent gameEvent : value) {
+                if (!(gameEvent instanceof GameEvent.PlayerMove)){
+                    log = true;
+                }
+            }
+            boolean finalLog = log;
             Platform.runLater(() -> {
                 for (GameEvent gameEvent : value) {
+                    if(finalLog){
+                        System.out.print(gameEvent+"; ");
+                    }
                     if(gameEvent instanceof GameEvent.StartRound startRound){
-                        gameStage.resetStage();;
+                        gameStage.resetStage(startRound.walls());
                         scoreBoard.setText(formatScoreBoard(startRound.score()));
                     }
                     if(gameEvent instanceof GameEvent.PlayerMove playerMove){
@@ -88,7 +100,9 @@ public class GameModel implements GameCallback{
                     if(gameEvent instanceof GameEvent.Destroy destroy){
                         gameStage.notifyPlayerDead(destroy.playerIndex());
                     }
-
+                }
+                if(finalLog){
+                    System.out.println();
                 }
             });
         });

@@ -78,11 +78,11 @@ public sealed interface GameEvent {
     }
 
     record HitWall(
-            int wallCode
+            int x, int y
     )implements GameEvent{
         @Override
         public String serialize() {
-            int[] data = new int[]{ wallCode };
+            int[] data = new int[]{ x, y };
             return "HITW&%s".formatted(
                     EncodingUtil.encodeIntArrayToString(data)
             );
@@ -142,7 +142,7 @@ public sealed interface GameEvent {
         if(rawData.startsWith("HITW")){
             String[] parts = rawData.split("&");
             int[] data = EncodingUtil.decodeStringToIntArray(parts[1]);
-            return new HitWall(data[0]);
+            return new HitWall(data[0], data[1]);
         }
         if(rawData.startsWith("DIE")){
             String[] parts = rawData.split("&");
