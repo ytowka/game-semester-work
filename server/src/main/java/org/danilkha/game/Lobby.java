@@ -33,12 +33,14 @@ public class Lobby{
                 throw new RuntimeException(e);
             }
 
-            synchronized (currentRound.getValue().getSingleEvents()){
+            Round round = currentRound.getValue();
+            synchronized (round){
                 currentRound.invalidate();
                 currentRound.getValue().resetSingleEvents();
             }
         }
     });
+
 
 
     public Lobby(String name, Player host) {

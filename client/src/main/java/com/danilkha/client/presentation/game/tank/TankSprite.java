@@ -1,8 +1,10 @@
 package com.danilkha.client.presentation.game.tank;
 
+import com.danilkha.client.presentation.game.GameModel;
 import com.danilkha.client.presentation.game.Sprite;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.danilkha.config.GameConfig;
 
 public abstract class TankSprite extends Sprite {
 
@@ -24,6 +26,9 @@ public abstract class TankSprite extends Sprite {
         };
 
         this.node = new ImageView(new Image(image, width, height, false, false));
+
+        node.setX(GameModel.getActualSize(GameConfig.PLAYER_START_POSITIONS[playerIndex][0]));
+        node.setY(GameModel.getActualSize(GameConfig.PLAYER_START_POSITIONS[playerIndex][1]));
     }
 
 

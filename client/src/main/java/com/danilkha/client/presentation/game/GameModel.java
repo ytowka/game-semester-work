@@ -8,12 +8,15 @@ import org.danilkha.api.GameEvent;
 import org.danilkha.api.GameRoundApi;
 import org.danilkha.config.GameConfig;
 
+import java.security.PublicKey;
+
 public class GameModel implements GameCallback{
 
     public final Scene scene;
     private final GameRoundApi gameRoundApi;
 
     public static Label debugInfo;
+    public Label scoreBoard;
 
     private final GameStage gameStage;
 
@@ -28,10 +31,16 @@ public class GameModel implements GameCallback{
         gameStage.setPrefHeight(WINDOW_SIZE);
 
         debugInfo = new Label();
+        scoreBoard = new Label();
 
         BorderPane root = new BorderPane(gameStage);
 
-        root.setTop(debugInfo);
+        BorderPane info = new BorderPane();
+
+        info.setLeft(debugInfo);
+        info.setRight(scoreBoard);
+
+        root.setTop(info);
 
         scene = new Scene(root);
 
@@ -58,6 +67,10 @@ public class GameModel implements GameCallback{
         gameRoundApi.subscribeGameEvents().addObserver(value -> {
             Platform.runLater(() -> {
                 for (GameEvent gameEvent : value) {
+                    if(gameEvent instanceof GameEvent.StartRound startRound){
+                        gameStage.resetStage();;
+                        scoreBoard.setText(formatScoreBoard(startRound.score()));
+                    }
                     if(gameEvent instanceof GameEvent.PlayerMove playerMove){
                         gameStage.moveTank(
                                 playerMove.playerIndex(),
@@ -116,5 +129,16 @@ public class GameModel implements GameCallback{
     @Override
     public void wallHit(int x, int y) {
 
+    }
+
+    private String formatScoreBoard(int[] scores){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < scores.length; i++) {
+            sb.append("%s: %s".formatted(gameStage.getPlayerNames()[i], scores[i]));
+            if(i < scores.length - 1){
+                sb.append('\n');
+            }
+        }
+        return sb.toString();
     }
 }

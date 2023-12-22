@@ -3,7 +3,6 @@ package com.danilkha.client.presentation.game;
 import com.danilkha.client.presentation.game.missle.Missile;
 import com.danilkha.client.presentation.game.tank.ControllerTankSprite;
 import com.danilkha.client.presentation.game.tank.RemoteTankSprite;
-import com.danilkha.client.presentation.game.tank.TankSprite;
 import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
 import org.danilkha.config.GameConfig;
@@ -17,7 +16,6 @@ public class GameStage extends Pane{
     private final AnimationTimer gameLoop;
 
 
-
     private ControllerTankSprite controllerTankSprite;
     private final List<RemoteTankSprite> remoteTanks;
     private final List<Missile> missiles;
@@ -29,6 +27,9 @@ public class GameStage extends Pane{
 
     private final float gameWidth;
     private final float gameHeight;
+
+    private final String[] playerNames;
+    private final String controllerPlayerName;
 
     public final Set<Integer> pressedKeys;
 
@@ -66,26 +67,12 @@ public class GameStage extends Pane{
 
     private GameCallback gameCallback;
 
-    private void shoot(float centerX, float centerY, double degAngle) {
-        Missile missile = new Missile(
-                controllerTankSprite.getPlayerIndex(),
-                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
-                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
-                centerX,
-                centerY,
-                (float) degAngle
-        );
-        getChildren().add(missile.getImage());
-        synchronized (missiles){
-            missiles.add(missile);
-        }
-        gameCallback.shoot(centerX, centerY, degAngle);
-    }
 
     public GameStage(String[] players, String controller, float gameWidth, float gameHeight, GameCallback gameCallback){
+        playerNames = players;
+        controllerPlayerName = controller;
 
         remoteTanks = new ArrayList<>();
-        respawnTanks(players, controller);
 
         missiles = new ArrayList<>();
 
@@ -107,7 +94,7 @@ public class GameStage extends Pane{
     }
 
     private void doActors(int delta){
-        if(!controllerTankSprite.isDead()){
+        if(controllerTankSprite != null && !controllerTankSprite.isDead()){
             controllerTankSprite.onAct(delta);
         }
         remoteTanks.forEach(sprite -> {
@@ -151,6 +138,21 @@ public class GameStage extends Pane{
         }
     }
 
+    private void shoot(float centerX, float centerY, double degAngle) {
+        Missile missile = new Missile(
+                controllerTankSprite.getPlayerIndex(),
+                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                GameModel.getActualSize(GameConfig.MISSILE_SIZE),
+                centerX,
+                centerY,
+                (float) degAngle
+        );
+        getChildren().add(missile.getImage());
+        synchronized (missiles){
+            missiles.add(missile);
+        }
+        gameCallback.shoot(centerX, centerY, degAngle);
+    }
 
 
     public void start(){
@@ -192,19 +194,18 @@ public class GameStage extends Pane{
         }
     }
 
-    private void respawnTanks(String[] players, String controller){
-
+    public void resetStage(){
         for (RemoteTankSprite remoteTank : remoteTanks) {
             getChildren().remove(remoteTank.getImage());
         }
         remoteTanks.clear();
         if(controllerTankSprite != null){
-            getChildren().remove(controllerTankSprite);
+            getChildren().remove(controllerTankSprite.getImage());
         }
 
-        for (int i = 0; i < players.length; i++) {
-            String s = players[i];
-            if (s.equals(controller)) {
+        for (int i = 0; i < playerNames.length; i++) {
+            String s = playerNames[i];
+            if (s.equals(controllerPlayerName)) {
                 controllerTankSprite = new ControllerTankSprite(i, 50, 50) ;
                 controllerTankSprite.setGameStage(this);
             } else {
@@ -219,9 +220,6 @@ public class GameStage extends Pane{
 
     }
 
-    public void resetStage(){
-
-    }
 
     public MutableObservableValue<float[]> getPlayerMove() {
         return playerMove;
@@ -246,5 +244,13 @@ public class GameStage extends Pane{
                 break;
             }
         }
+    }
+
+    public String[] getPlayerNames() {
+        return playerNames;
+    }
+
+    public String getControllerPlayerName() {
+        return controllerPlayerName;
     }
 }

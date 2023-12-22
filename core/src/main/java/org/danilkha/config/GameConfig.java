@@ -13,5 +13,10 @@ public class GameConfig {
     public static final float GUN_ROTATE_SPEED = 60f; // degree per sec
     public static final int RELOAD_PERIOD = 2000; // ms
 
+    public static final float[][] PLAYER_START_POSITIONS = new float[][]{
+            {1f ,1f}, {MAP_SIZE - 1f, 1f},
+            {1f ,MAP_SIZE - 1f}, {MAP_SIZE - 1f, MAP_SIZE - 1f},
+    };
+
 
 }

@@ -42,6 +42,7 @@ public class Game {
         lobby.joinPlayer(player);
         player.setConnectedLobby(lobby);
         players.put(playerId, player);
+        listObservableValue.invalidate();
         return false;
     }
 

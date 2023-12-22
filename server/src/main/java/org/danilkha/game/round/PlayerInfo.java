@@ -3,6 +3,8 @@ package org.danilkha.game.round;
 import org.danilkha.config.GameConfig;
 import org.danilkha.game.Player;
 
+import static org.danilkha.config.GameConfig.PLAYER_START_POSITIONS;
+
 public class PlayerInfo {
     private Player player;
     private final int index;
@@ -13,12 +15,18 @@ public class PlayerInfo {
     private int hp;
     private float angle; //deg
 
+    private int score = 0;
+
     public PlayerInfo(int index, Player player) {
         this.player = player;
 
         this.index = index;
-        x = 0f;
-        y = 0f;
+        reset();
+    }
+
+    public void reset(){
+        x = PLAYER_START_POSITIONS[index][0];
+        y = PLAYER_START_POSITIONS[index][1];;
 
         hp = GameConfig.PLAYER_HP;
         angle = 0f;
@@ -67,5 +75,17 @@ public class PlayerInfo {
     public boolean hit(){
         hp -= GameConfig.DEFAULT_DAMAGE;
         return hp <= 0f;
+    }
+
+    public boolean isAlive(){
+        return hp > 0;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void addScore(){
+        score += 1;
     }
 }
