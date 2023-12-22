@@ -29,17 +29,19 @@ public class GameModel implements GameCallback{
 
         gameStage = new GameStage(playerNames, me,  GameConfig.MAP_SIZE, GameConfig.MAP_SIZE, this);
 
-        gameStage.setMinHeight(WINDOW_SIZE);
-        gameStage.setMinWidth(WINDOW_SIZE);
-        gameStage.setPrefWidth(WINDOW_SIZE);
-        gameStage.setPrefHeight(WINDOW_SIZE);
-
         debugInfo = new Label();
         scoreBoard = new Label();
 
         VBox root = new VBox();
 
+        gameStage.setMinHeight(WINDOW_SIZE);
+        gameStage.setMinWidth(WINDOW_SIZE);
+        gameStage.setPrefWidth(WINDOW_SIZE);
+        gameStage.setPrefHeight(WINDOW_SIZE);
+
         BorderPane info = new BorderPane();
+
+        scoreBoard.setText(formatScoreBoard(new int[playerNames.length]));
 
         //info.setLeft(debugInfo);
         info.setRight(scoreBoard);
